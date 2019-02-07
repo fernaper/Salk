@@ -1,4 +1,5 @@
-https://github.com/hthuwal/sign-language-gesture-recognition
+API Buena: https://github.com/loicmarie/sign-language-alphabet-recognizer
+Opción 2: https://github.com/hthuwal/sign-language-gesture-recognition
 
 Imagenes por defecto: https://funtranslations.com/sign-language
 OpenTok Android SKDK: https://tokbox.com/developer/sdks/android/
