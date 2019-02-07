@@ -1,0 +1,5 @@
+https://github.com/hthuwal/sign-language-gesture-recognition
+
+Imagenes por defecto: https://funtranslations.com/sign-language
+OpenTok Android SKDK: https://tokbox.com/developer/sdks/android/
+Para hacer mockups: https://app.moqups.com
