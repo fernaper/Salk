@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Salk</string>
+    <string name="title_activity_scan">ScanActivity</string>
+    <string name="title_activity_camera">CameraActivity</string>
+</resources>
