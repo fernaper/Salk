@@ -21,19 +21,21 @@ def connect_neural_network():
     process_manager = BaseManager(address=('localhost', 5750), authkey=config.QUEUE_PASS)
     count = 0
     while not connected:
+        print('Trying to connect to neural network...')
         try:
             process_manager.connect()
             connected = True
         except ConnectionRefusedError as e:
             print(e)
-            return None
             count += 1
+            if count > 2:
+                return None
             time.sleep(1)
     print('Connected to neural network')
     return process_manager
 
 def send_neural_network(img_queue, detection_queue, image):
-    img_queue.put_nowait(image)
+    img_queue.put(image)
     if not image.any():
         return False
     return detection_queue.get()
@@ -43,10 +45,11 @@ process_manager = connect_neural_network()
 
 @app.route('/', methods=['GET'])
 def hello():
-    return jsonify({'ip':'88.0.109.140','msg':'Welcome to Salk API','status':1})
+    return jsonify({'ip':'88.0.109.140','msg':'Welcome to Salk API','status':True, 'neural-network':connected})
 
 @app.route('/check_frame', methods=['POST'])
 def check_image():
+    print('Processing request')
     global process_manager
     if not connected:
         process_manager = connect_neural_network()
@@ -55,6 +58,7 @@ def check_image():
     numpy_image = np.fromfile(request.files['frame'], np.uint8)
     img = cv2.imdecode(numpy_image, cv2.IMREAD_COLOR)
     prediction, confidence = send_neural_network(process_manager.img_queue(), process_manager.detection_queue(), img)
+    print(' - Prediction: {}; Confidence: {}'.format(prediction, confidence))
     return jsonify({'prediction':prediction, 'confidence':confidence})
 
 if __name__ == '__main__':

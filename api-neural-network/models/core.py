@@ -1,11 +1,7 @@
 # This method needs to be executed on a linux terminal
-import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib
 import config
 import queue
-import time
-import copy
 import cv2
 import sys
 import os
@@ -15,6 +11,10 @@ from multiprocessing.managers import BaseManager
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # Disable tensorflow compilation warnings
 import tensorflow as tf
 
+sess = None
+softmax_tensor = None
+# Loads label file, strips off carriage return
+label_lines = [line.rstrip() for line in tf.gfile.GFile("logs/trained_labels.txt")]
 
 def manage_connection():
     img_queue = queue.Queue()
@@ -32,11 +32,9 @@ def process_frame(img_queue, detection_queue):
     image_data = cv2.imencode('.jpg', frame)[1].tostring()
     if not image_data:
         return False
-    #detect(frame)
-    time.sleep(1) # Just to simulate processing
     answer, confidence = predict(image_data)
     print(' - Answer: {}; Confidence: {}'.format(answer, confidence))
-    detection_queue.put_nowait((answer, float(confidence)))
+    detection_queue.put((answer, float(confidence)))
     return True
 
 
@@ -58,26 +56,27 @@ def predict(image_data):
     return res, max_score
 
 
-# Loads label file, strips off carriage return
-label_lines = [line.rstrip() for line
-                   in tf.gfile.GFile("logs/trained_labels.txt")]
+def main():
+    global sess, softmax_tensor
 
+    # Unpersists graph from file
+    with tf.gfile.FastGFile("logs/trained_graph.pb", 'rb') as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+        _ = tf.import_graph_def(graph_def, name='')
 
-# Unpersists graph from file
-with tf.gfile.FastGFile("logs/trained_graph.pb", 'rb') as f:
-    graph_def = tf.GraphDef()
-    graph_def.ParseFromString(f.read())
-    _ = tf.import_graph_def(graph_def, name='')
+    with tf.Session() as sess:
+        # With this queues we can connect with our API
+        process_manager = manage_connection()
+        img_queue = process_manager.img_queue()
+        detection_queue = process_manager.detection_queue()
+        # Feed the image_data as input to the graph and get first prediction
+        softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
 
-with tf.Session() as sess:
-    # With this queues we can connect with our API
-    process_manager = manage_connection()
-    img_queue = process_manager.img_queue()
-    detection_queue = process_manager.detection_queue()
-    # Feed the image_data as input to the graph and get first prediction
-    softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
+        print('Neural network ready!')
+        while process_frame(img_queue, detection_queue):
+            pass
+        print('Connection Closed')
 
-    print('Neural network ready!')
-    while process_frame(img_queue, detection_queue):
-        pass
-    print('Connection Closed')
+if __name__ == '__main__':
+    main()
