@@ -1,61 +1,61 @@
+from multiprocessing.managers import BaseManager
 from flask import Flask, request, jsonify
 
-import sys
-import os
-
-import matplotlib
 import numpy as np
-import matplotlib.pyplot as plt
-import copy
+import config
+import queue
+import time
 import cv2
 
-# Disable tensorflow compilation warnings
+# This variable is for not blocking the api until the neural network is connected
+# It will try to connect 3 times
+# If it can not connect and you ask for a method that needs it, it will retry another 3 times
+# If it fails another time, just answer Errror
+connected = False
 
-os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-import tensorflow as tf
+def connect_neural_network():
+    global connected
 
-def predict(image_data):
-    predictions = sess.run(softmax_tensor, {'DecodeJpeg/contents:0': image_data})
+    BaseManager.register('img_queue')
+    BaseManager.register('detection_queue')
+    process_manager = BaseManager(address=('localhost', 5750), authkey=config.QUEUE_PASS)
+    count = 0
+    while not connected:
+        try:
+            process_manager.connect()
+            connected = True
+        except ConnectionRefusedError as e:
+            print(e)
+            return None
+            count += 1
+            time.sleep(1)
+    print('Connected to neural network')
+    return process_manager
 
-    # Sort to show labels of first prediction in order of confidence
-    top_k = predictions[0].argsort()[-len(predictions[0]):][::-1]
-
-    max_score = 0.0
-    res = ''
-    for node_id in top_k:
-        human_string = label_lines[node_id]
-        score = predictions[0][node_id]
-        if score > max_score:
-            max_score = score
-            res = human_string
-    return res, max_score
-
-# Loads label file, strips off carriage return
-label_lines = [line.rstrip() for line in tf.gfile.GFile("logs/trained_labels.txt")]
-
-# Unpersists graph from file
-with tf.gfile.FastGFile("logs/trained_graph.pb", 'rb') as f:
-    graph_def = tf.GraphDef()
-    graph_def.ParseFromString(f.read())
-    _ = tf.import_graph_def(graph_def, name='')
-
+def send_neural_network(img_queue, detection_queue, image):
+    img_queue.put_nowait(image)
+    if not image.any():
+        return False
+    return detection_queue.get()
 
 app = Flask(__name__)
+process_manager = connect_neural_network()
 
 @app.route('/', methods=['GET'])
 def hello():
     return jsonify({'ip':'88.0.109.140','msg':'Welcome to Salk API','status':1})
 
-
-@app.route('/get_words', methods=['GET'])
-def get_words():
-    return jsonify(['hola', 'mundo'])
-
-
 @app.route('/check_frame', methods=['POST'])
-def check_frame():
-    return jsonify(['work in progress'])
-
+def check_image():
+    global process_manager
+    if not connected:
+        process_manager = connect_neural_network()
+        if not connected:
+            return jsonify({'error':'It has not been possible to establish a connection to the neural network'})
+    numpy_image = np.fromfile(request.files['frame'], np.uint8)
+    img = cv2.imdecode(numpy_image, cv2.IMREAD_COLOR)
+    prediction, confidence = send_neural_network(process_manager.img_queue(), process_manager.detection_queue(), img)
+    return jsonify({'prediction':prediction, 'confidence':confidence})
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5500) #run app on port 5000

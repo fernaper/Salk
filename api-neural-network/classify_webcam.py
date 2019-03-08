@@ -46,7 +46,7 @@ with tf.Session() as sess:
     softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
 
     c = 0
-
+    
     cap = cv2.VideoCapture(0)
 
     res, score = '', 0.0
