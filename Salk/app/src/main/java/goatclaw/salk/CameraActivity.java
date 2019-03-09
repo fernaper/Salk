@@ -3,6 +3,7 @@ package goatclaw.salk;
 import android.app.Activity;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.hardware.camera2.*; //todo mirar para acualizar a camera2
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
