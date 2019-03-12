@@ -1,5 +1,6 @@
 package goatclaw.salk;
 
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.util.JsonReader;
 import android.util.Log;
@@ -16,16 +17,17 @@ import javax.net.ssl.HttpsURLConnection;
  * Created by Enrique on 07/03/2019.
  */
 
-public class ConnectAPI extends AsyncTask<Integer, String, Boolean> {
+public class ConnectAPI extends AsyncTask<Bitmap, String, Boolean> {
 
     @Override
     protected void onPreExecute() {
 
     }
     @Override
-    protected Boolean doInBackground(Integer... params) {
+    protected Boolean doInBackground(Bitmap... params) {
 
         // Create URL
+/*
         URL RedNeuronal = null;
         try {
             RedNeuronal = new URL("https://api.github.com/"); //todo poner la API
@@ -64,6 +66,15 @@ public class ConnectAPI extends AsyncTask<Integer, String, Boolean> {
             e.printStackTrace();
         }
 
-        return null;
+*/
+
+
+        return true;
+    }
+
+    @Override
+    protected void onPostExecute(Boolean aBoolean) {
+        super.onPostExecute(aBoolean);
+        CameraActivity.t = false;
     }
 }

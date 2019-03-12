@@ -1,9 +1,13 @@
 package goatclaw.salk;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.hardware.camera2.*; //todo mirar para acualizar a camera2
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -13,30 +17,68 @@ import android.view.Surface;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import java.util.List;
+
 public class CameraActivity extends Activity {
+
+    static final int REQUEST_IMAGE_CAPTURE = 1;
 
     private Camera mCamera;
     private CameraPreview mPreview;
+    private Bitmap imageTaken;
+
+    public static boolean t = true;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
-        // Create an instance of Camera
-        mCamera = getCameraInstance();
+        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        Log.e("Resolution", ""+preview.getWidth()+" "+preview.getHeight());
 
+        // Create an instance of Camera
+        //todo revisar el tamaño de la cámara
+        mCamera = getCameraInstance();
+        scaleCamera(370,380);
 
         // Create our Preview view and set it as the content of our activity.
 
-        setCameraDisplayOrientation(this,Camera.CameraInfo.CAMERA_FACING_FRONT );
+        setCameraDisplayOrientation(this,Camera.CameraInfo.CAMERA_FACING_FRONT);
         mPreview = new CameraPreview(this, mCamera);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
+        Log.e("Resolution", ""+preview.getWidth()+" "+preview.getHeight());
+
+        /*try {
+            getFrames();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
+    }
+
+    private void scaleCamera(int w, int h) {
+
+        Camera.Parameters params = mCamera.getParameters();
+        // Check what resolutions are supported by your camera
+        List<Camera.Size> sizes = params.getSupportedPictureSizes();
+
+        // Iterate through all available resolutions and choose one.
+        // The chosen resolution will be stored in mSize.
+        Camera.Size mSize;
+        params.setPictureSize(w, h);
+        for (Camera.Size size : sizes) {
+            if (similarResolution(size, w, h)) {
+                mSize = size;
+                params.setPictureSize(mSize.width, mSize.height);
+                break;
+            }
+        }
+        mCamera.setParameters(params);
     }
 
     public static Camera getCameraInstance(){
-        Camera c = null;
+            Camera c = null;
         try {
             c =  Camera.open(Camera.CameraInfo.CAMERA_FACING_FRONT); // attempt to get a Camera instance
         }
@@ -48,6 +90,19 @@ public class CameraActivity extends Activity {
             Log.i("CamNull", "null");
 
         return c; // returns null if camera is unavailable
+    }
+
+    private static boolean similarResolution(Camera.Size size, int w, int h) {
+        if(size.width - 100 < w && size.width + 100 > w)
+            if(size.height - 100 < h && size.height + 100 > h){
+                Log.e("ChangeResolution", ""+w+" "+h+ "....."+size.width+" "+size.height);
+                return true;
+
+            }
+
+        Log.e("NOTChangeResolution", ""+w+" "+h + "....."+size.width+" "+size.height);
+        return false;
+
     }
 
     public void setCameraDisplayOrientation(Activity activity, int cameraId) {
@@ -69,7 +124,23 @@ public class CameraActivity extends Activity {
         } else {  // back-facing
             result = (info.orientation - degrees + 360) % 360;
         }
+
         mCamera.setDisplayOrientation(result);
     }
+
+    private void getFrames() throws InterruptedException {
+
+
+        ConnectAPI conection = (ConnectAPI) new ConnectAPI().execute(imageTaken);
+
+        while (t){
+            Log.i("Test", "en el while");
+            Thread.sleep(3000);
+        }
+        Log.i("Test", "salir");
+
+
+    }
+
 
 }
