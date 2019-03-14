@@ -2,9 +2,17 @@ package goatclaw.salk;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import java.io.BufferedReader;
 import android.util.JsonReader;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,10 +27,38 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class ConnectAPI extends AsyncTask<Bitmap, String, Boolean> {
 
+    final String URL = "https://88.0.109.140/";
+
     @Override
     protected void onPreExecute() {
 
     }
+
+    //Crea el mensaje POST y mapea la respuesta
+    private void sendImage(BufferedReader image) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        PostService postService = retrofit.create(PostService.class);
+        //Aqui es donde realizamos la petición POST
+        postService.savePost(image).enqueue(new Callback<Post>() {
+            @Override
+            public void onResponse(Call<Post> call, Response<Post> response) {
+                if(response.isSuccessful()) {
+                    Log.i("PETITION", "post submitted to API." + response.body().toString());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Post> call, Throwable t) {
+                Log.e("PETITION", "unable post to API.");
+            }
+        });
+    }
+
+
+
     @Override
     protected Boolean doInBackground(Bitmap... params) {
 
