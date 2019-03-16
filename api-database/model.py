@@ -1,4 +1,5 @@
 from datetime import datetime
+import requests
 from elasticsearch import Elasticsearch
 es = Elasticsearch(
     ['localhost'],
@@ -7,10 +8,12 @@ es = Elasticsearch(
     port=9200,
 )
 
+def connection():
+    res = requests.get('http://localhost:9200')
+    return res
 
 def get_word(language):
-    query =
-    {
+    query = {
     "query": {
         "function_score" : {
           "query" : { "match": {"lang": language}},
@@ -28,8 +31,7 @@ def get_word(language):
 
 
 def get_word_with_difficulty(difficulty):
-    query =
-    {
+    query = {
     "query": {
         "function_score" : {
           "query" : {
