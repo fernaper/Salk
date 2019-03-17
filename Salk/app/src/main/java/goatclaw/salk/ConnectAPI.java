@@ -28,24 +28,27 @@ import javax.net.ssl.HttpsURLConnection;
 public class ConnectAPI extends AsyncTask<Bitmap, String, Boolean> {
 
     final String URL = "https://88.0.109.140/";
+    Post respuesta;
 
     @Override
     protected void onPreExecute() {
 
     }
 
-    //Crea el mensaje POST y mapea la respuesta
+    //Crea el mensaje POST y mapea la respuesta de forma asincrona
     private void sendImage(BufferedReader image) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         PostService postService = retrofit.create(PostService.class);
-        //Aqui es donde realizamos la petición POST
+        //Aqui es donde realizamos la petición POST y recibimos la respuesta asincrona
         postService.savePost(image).enqueue(new Callback<Post>() {
+            //Se supone que al recibir la respuesta esto queda mapeado en la instancia Post que guardamos en respuesta
             @Override
             public void onResponse(Call<Post> call, Response<Post> response) {
                 if(response.isSuccessful()) {
+                    respuesta = response.body();
                     Log.i("PETITION", "post submitted to API." + response.body().toString());
                 }
             }
