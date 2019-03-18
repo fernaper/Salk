@@ -1,11 +1,11 @@
 package goatclaw.salk;
 
-import java.io.BufferedReader;
+import android.graphics.Bitmap;
+import android.media.Image;
 
 import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
-import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 /*
@@ -20,5 +20,5 @@ public interface PostService {
 
     @POST(API_ROUTE)
     @FormUrlEncoded
-    Call<Post> savePost(@Field("frame") BufferedReader key);
+    Call<Post> savePost(@Field("frame") Image key);
 }

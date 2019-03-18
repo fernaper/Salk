@@ -15,6 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class CameraActivity extends Activity {
         // Create an instance of Camera
         //todo revisar el tamaño de la cámara
         mCamera = getCameraInstance();
-        scaleCamera(370,380);
+        //scaleCamera(370,380);
 
         // Create our Preview view and set it as the content of our activity.
 
@@ -50,11 +51,13 @@ public class CameraActivity extends Activity {
         preview.addView(mPreview);
         Log.e("Resolution", ""+preview.getWidth()+" "+preview.getHeight());
 
-        /*try {
-            getFrames();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
+        Button btnTake = (Button) findViewById(R.id.btnAction);
+        btnTake.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dispatchTakePictureIntent();
+            }
+        });
     }
 
     private void scaleCamera(int w, int h) {
@@ -128,19 +131,22 @@ public class CameraActivity extends Activity {
         mCamera.setDisplayOrientation(result);
     }
 
-    private void getFrames() throws InterruptedException {
 
-
-        ConnectAPI conection = (ConnectAPI) new ConnectAPI().execute(imageTaken);
-
-        while (t){
-            Log.i("Test", "en el while");
-            Thread.sleep(3000);
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
         }
-        Log.i("Test", "salir");
-
-
     }
 
-
+/*
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+             imageBitmap = (Bitmap) extras.get("data");
+            ConnectAPI conection = (ConnectAPI) new ConnectAPI();
+            conection.sendImage(imageBitmap);
+        }
+    }*/
 }
