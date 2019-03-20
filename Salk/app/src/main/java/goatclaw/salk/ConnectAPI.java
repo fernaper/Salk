@@ -49,7 +49,8 @@ public class ConnectAPI{
 
         HashMap<String, byte[]> params = new HashMap<String, byte[]>();
         params.put("frame", image);
-        JSONObject json = new JSONObject(params).toString().getBytes();
+        //todo: Hay que ver que cojones hacemos aqui para pasar los parametros con volley
+        //JSONObject json = new JSONObject(params).toString().getBytes();
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,

@@ -154,6 +154,7 @@ local.properties
 .idea/modules.xml
 .idea/scopes/scope_settings.xml
 .idea/vcs.xml
+.idea/build_file_checksums.ser
 *.iml
 
 # OS-specific files
