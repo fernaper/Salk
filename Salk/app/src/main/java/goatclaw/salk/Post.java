@@ -11,35 +11,21 @@ import com.google.gson.annotations.SerializedName;
  */
 public class Post {
 
-    @SerializedName("prediction")
+    @SerializedName("ok")
     @Expose
-    private String prediction;
-    @SerializedName("confidence")
-    @Expose
-    private Double confidence;
+    private String ok;
 
     public String getPrediction() {
-        return prediction;
+        return ok;
     }
 
     public void setPrediction(String prediction) {
-        this.prediction = prediction;
+        this.ok = prediction;
     }
 
     @Override
     public String toString() {
         return "Post{" +
-                "prediction='" + prediction + '\'' +
-                ", confidence=" + confidence +
-                '}';
+                "prediction='" + ok + '}';
     }
-
-    public Double getConfidence() {
-        return confidence;
-    }
-
-    public void setConfidence(Double confidence) {
-        this.confidence = confidence;
-    }
-
 }

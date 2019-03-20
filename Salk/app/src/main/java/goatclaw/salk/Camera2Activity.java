@@ -50,6 +50,8 @@ public class Camera2Activity extends AppCompatActivity {
     private CaptureRequest.Builder previewBuilder;
     private CameraCaptureSession previewSession;
     Button getpicture;
+
+    public static Context ctx;
     private static final SparseIntArray ORIENTATIONS=new SparseIntArray();
     static
     {
@@ -62,6 +64,7 @@ public class Camera2Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera2);
+        ctx = getApplicationContext();
         textureView=(TextureView)findViewById(R.id.textureview);
         textureView.setSurfaceTextureListener(surfaceTextureListener);
         getpicture=(Button)findViewById(R.id.getpicture);
@@ -112,9 +115,10 @@ public class Camera2Activity extends AppCompatActivity {
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                         byte[] bytes = new byte[buffer.capacity()];
                         buffer.get(bytes);
-                        connection.sendImage(image);
+                        connection.sendImage(bytes);
                         save(bytes);
                     } catch (Exception ee) {
+                        ee.printStackTrace();
                     }
                     finally {
                         if(image!=null)

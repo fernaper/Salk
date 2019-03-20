@@ -1,17 +1,26 @@
 package goatclaw.salk;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.AsyncTask;
 
 import retrofit2.Call;
 import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import java.io.BufferedReader;
 import android.util.JsonReader;
 import android.util.Log;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -32,27 +42,31 @@ public class ConnectAPI{
     Post respuesta;
 
     //Crea el mensaje POST y mapea la respuesta de forma asincrona
-    public void sendImage(Image image) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        PostService postService = retrofit.create(PostService.class);
-        //Aqui es donde realizamos la petición POST y recibimos la respuesta asincrona
-        postService.savePost(image).enqueue(new Callback<Post>() {
-            //Se supone que al recibir la respuesta esto queda mapeado en la instancia Post que guardamos en respuesta
-            @Override
-            public void onResponse(Call<Post> call, Response<Post> response) {
-                if(response.isSuccessful()) {
-                    respuesta = response.body();
-                    Log.i("PETITION", "post submitted to API." + response.body().toString());
-                }
-            }
+    public void sendImage(byte[] image) {
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(Camera2Activity.ctx);
+        String url ="http://88.0.109.140:5500/check_frame_test";
 
+        HashMap<String, byte[]> params = new HashMap<String, byte[]>();
+        params.put("frame", image);
+        JSONObject json = new JSONObject(params).toString().getBytes();
+
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.i("PETITION",  response);
+                    }
+                }, new Response.ErrorListener() {
             @Override
-            public void onFailure(Call<Post> call, Throwable t) {
-                Log.e("PETITION", "unable post to API.");
+            public void onErrorResponse(VolleyError error) {
+                Log.i("PETITION",  error.toString());
             }
         });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
     }
 }
