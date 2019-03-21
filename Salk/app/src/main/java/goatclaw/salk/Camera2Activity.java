@@ -143,11 +143,15 @@ public class Camera2Activity extends AppCompatActivity {
                     Image image = null;
                     try {
                         image = reader.acquireLatestImage();
-                        ConnectAPI connection = new ConnectAPI();
+
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                         byte[] bytes = new byte[buffer.capacity()];
                         buffer.get(bytes);
-                        connection.sendImage(bytes);
+                        Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+
+                        ConnectAPI connection = new ConnectAPI();
+                        connection.sendImage(bitmapImage);
+
                         save(bytes);
                     } catch (Exception ee) {
                         ee.printStackTrace();
