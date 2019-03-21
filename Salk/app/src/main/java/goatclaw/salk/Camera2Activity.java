@@ -62,7 +62,7 @@ public class Camera2Activity extends AppCompatActivity {
     private CameraCaptureSession previewSession;
     Button getpicture;
 
-    public static Context ctx;
+    private Context ctx;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -94,8 +94,11 @@ public class Camera2Activity extends AppCompatActivity {
         int textureViewWidth = (int) (screenWidth*0.8);
         int textureViewHeight = (int) (screenHeight*0.8);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(textureViewWidth, textureViewHeight);
-        layoutParams.setMargins((screenWidth-textureViewWidth)/2,  screenHeight - (36+textureViewHeight),
-                            (screenWidth-textureViewWidth)/2, 36);
+
+        //Para el prototipo se cogen algunos valores a pincho. Cambian de un móvil a otro
+        layoutParams.setMargins((screenWidth-textureViewWidth)/2 - 20,  screenHeight - (36+textureViewHeight),
+                            (screenWidth-textureViewWidth)/2 - 20, 36);
+
         textureView.setLayoutParams(layoutParams);
 
         getpicture.setOnClickListener(new View.OnClickListener() {
@@ -147,10 +150,9 @@ public class Camera2Activity extends AppCompatActivity {
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                         byte[] bytes = new byte[buffer.capacity()];
                         buffer.get(bytes);
-                        Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
 
                         ConnectAPI connection = new ConnectAPI();
-                        connection.sendImage(bitmapImage);
+                        connection.sendImage(bytes, ctx);
 
                         save(bytes);
                     } catch (Exception ee) {

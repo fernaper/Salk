@@ -1,6 +1,7 @@
 package goatclaw.salk;
 
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
@@ -25,17 +26,11 @@ public class ConnectAPI{
 
     final String URL = "http://88.0.109.140:5500/check_frame";
 
-    public static String get64BaseImage (Bitmap bmp) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] imageBytes = baos.toByteArray();
-        return Base64.encodeToString(imageBytes, Base64.DEFAULT);
-    }
-
     //Crea el mensaje POST y mapea la respuesta de forma asincrona
-    public void sendImage(final Bitmap image) {
+    public void sendImage(byte[] image, Context ctx) {
         // Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(Camera2Activity.ctx);
+        final String encodedImage = Base64.encodeToString(image, Base64.DEFAULT);
+        RequestQueue queue = Volley.newRequestQueue(ctx);
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
@@ -53,7 +48,7 @@ public class ConnectAPI{
                 @Override
                 protected Map<String, String> getParams() throws AuthFailureError {
                     HashMap<String, String> params = new HashMap<String, String>();
-                    params.put("frame", get64BaseImage(image));
+                    params.put("frame", encodedImage);
                     return params;
                 }
             };
