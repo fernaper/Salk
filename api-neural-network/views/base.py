@@ -6,6 +6,9 @@ import config
 import queue
 import time
 import cv2
+import base64
+from PIL import Image
+from StringIO import StringIO
 
 # This variable is for not blocking the api until the neural network is connected
 # It will try to connect 3 times
@@ -40,6 +43,13 @@ def send_neural_network(img_queue, detection_queue, image):
         return False
     return detection_queue.get()
 
+def read_base64(b64_string):
+	sbuf = StringIO()
+	sbuf.write(base64.b64decode(b64_string))
+	pimg = Image.open(sbuf)
+	return cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
+
+
 app = Flask(__name__)
 process_manager = connect_neural_network()
 
@@ -55,9 +65,10 @@ def check_image():
         process_manager = connect_neural_network()
         if not connected:
             return jsonify({'error':'It has not been possible to establish a connection to the neural network'})
-    numpy_image = np.fromfile(request.files['frame'], np.uint8)
-    img = cv2.imdecode(numpy_image, cv2.IMREAD_COLOR)
-    prediction, confidence = send_neural_network(process_manager.img_queue(), process_manager.detection_queue(), img)
+    #numpy_image = np.fromfile(request.files['frame'], np.uint8)
+    #img = cv2.imdecode(numpy_image, cv2.IMREAD_COLOR)
+	img = read_base64(request.files['frame'])
+	prediction, confidence = send_neural_network(process_manager.img_queue(), process_manager.detection_queue(), img)
     print(' - Prediction: {}; Confidence: {}'.format(prediction, confidence))
     return jsonify({'prediction':prediction, 'confidence':confidence})
 
