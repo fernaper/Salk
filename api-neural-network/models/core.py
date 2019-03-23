@@ -27,8 +27,10 @@ def manage_connection():
 
 
 def process_frame(img_queue, detection_queue):
+    print('Processing frame')
     frame = img_queue.get()
     #frame = cv2.flip(frame, 1)
+    frame = cv2.flip(frame, 0)
     image_data = cv2.imencode('.jpg', frame)[1].tostring()
     if not image_data:
         return False

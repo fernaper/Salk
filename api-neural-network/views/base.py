@@ -8,7 +8,11 @@ import time
 import cv2
 import base64
 from PIL import Image
-from StringIO import StringIO
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 # This variable is for not blocking the api until the neural network is connected
 # It will try to connect 3 times
@@ -43,13 +47,6 @@ def send_neural_network(img_queue, detection_queue, image):
         return False
     return detection_queue.get()
 
-def read_base64(b64_string):
-	sbuf = StringIO()
-	sbuf.write(base64.b64decode(b64_string))
-	pimg = Image.open(sbuf)
-	return cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
-
-
 app = Flask(__name__)
 process_manager = connect_neural_network()
 
@@ -59,7 +56,6 @@ def hello():
 
 @app.route('/check_frame', methods=['POST'])
 def check_image():
-    print('Processing request')
     global process_manager
     if not connected:
         process_manager = connect_neural_network()
@@ -67,8 +63,12 @@ def check_image():
             return jsonify({'error':'It has not been possible to establish a connection to the neural network'})
     #numpy_image = np.fromfile(request.files['frame'], np.uint8)
     #img = cv2.imdecode(numpy_image, cv2.IMREAD_COLOR)
-	img = read_base64(request.files['frame'])
-	prediction, confidence = send_neural_network(process_manager.img_queue(), process_manager.detection_queue(), img)
+    print('Processing request')
+    b64_img = request.form['frame']
+    with open('logs/last_image.png','wb') as image_file:
+        image_file.write(base64.b64decode(b64_img))
+    img = cv2.imread('logs/last_image.png',0)
+    prediction, confidence = send_neural_network(process_manager.img_queue(), process_manager.detection_queue(), img)
     print(' - Prediction: {}; Confidence: {}'.format(prediction, confidence))
     return jsonify({'prediction':prediction, 'confidence':confidence})
 
