@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.LogRecord;
 
@@ -61,7 +62,8 @@ public class Camera2Activity extends AppCompatActivity {
     private CaptureRequest.Builder previewBuilder;
     private CameraCaptureSession previewSession;
     Button getpicture;
-
+    String palabra;
+    ConnectAPI connection = new ConnectAPI();
     private Context ctx;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -100,11 +102,23 @@ public class Camera2Activity extends AppCompatActivity {
                             (screenWidth-textureViewWidth)/2 - 20, 36);
 
         textureView.setLayoutParams(layoutParams);
-
+        //Todo: Llamada a la API de barral
+        //Dejamos de momento una palabra estandar
+        palabra = "hola";
         getpicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getPicture();
+                int cont = 0;
+                while(cont < palabra.length()) {
+                    char letra = palabra.charAt(cont);
+                    Log.i("HELLO", "" + letra);
+                    getPicture(letra);
+                    while (connection.getRespuesta() == null) ;
+                    if (connection.getRespuesta().get("prediction") == ("" + letra))
+                        cont++;
+                }
+                Log.i("HELLO", "MU BIEN MACHOTE");
+
             }
         });
 
@@ -116,7 +130,7 @@ public class Camera2Activity extends AppCompatActivity {
         });
     }
 
-    void getPicture() {
+    void getPicture(final char letra) {
         if (cameraDevice == null) {
             return;
         }
@@ -140,6 +154,7 @@ public class Camera2Activity extends AppCompatActivity {
             capturebuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             capturebuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
+
             ImageReader.OnImageAvailableListener imageAvailableListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
@@ -151,9 +166,7 @@ public class Camera2Activity extends AppCompatActivity {
                         byte[] bytes = new byte[buffer.capacity()];
                         buffer.get(bytes);
 
-                        ConnectAPI connection = new ConnectAPI();
-                        connection.sendImage(bytes, ctx);
-
+                        connection.sendImage(bytes, ctx, letra);
                         save(bytes);
                     } catch (Exception ee) {
                         ee.printStackTrace();
@@ -181,6 +194,7 @@ public class Camera2Activity extends AppCompatActivity {
                     }
                 }
             };
+
             HandlerThread handlerThread = new HandlerThread("takepicture");
             handlerThread.start();
             final Handler handler = new Handler(handlerThread.getLooper());
