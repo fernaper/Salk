@@ -7,12 +7,6 @@ import queue
 import time
 import cv2
 import base64
-from PIL import Image
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 # This variable is for not blocking the api until the neural network is connected
 # It will try to connect 3 times
