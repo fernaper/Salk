@@ -1,8 +1,11 @@
 package goatclaw.salk;
 
 
+import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.text.BoringLayout;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
@@ -27,10 +30,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Created by Enrique on 07/03/2019.
  */
 
-public class ConnectAPI{
+public class ConnectAPI extends AsyncTask<String, Boolean, Boolean> {
 
     final String URL = "http://88.0.109.140:5500/check_frame";
-    private HashMap<String, String> respuesta = null;
+    public static HashMap<String, String> respuesta;
+
 
     //Crea el mensaje POST y mapea la respuesta de forma asincrona
     public void sendImage(byte[] image, final Context ctx, final char letra) {
@@ -78,4 +82,14 @@ public class ConnectAPI{
 
 
     public HashMap<String, String> getRespuesta(){ return respuesta; }
+
+    @Override
+    protected void onPreExecute(){
+
+    }
+
+    @Override
+    protected Boolean doInBackground(String... strings) {
+        return null;
+    }
 }

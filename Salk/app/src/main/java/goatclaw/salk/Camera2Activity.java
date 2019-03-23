@@ -2,10 +2,7 @@ package goatclaw.salk;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
@@ -25,34 +22,44 @@ import android.os.HandlerThread;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.LogRecord;
+import java.util.Map;
 
 public class Camera2Activity extends AppCompatActivity {
     private Size previewsize;
@@ -61,9 +68,17 @@ public class Camera2Activity extends AppCompatActivity {
     private CameraDevice cameraDevice;
     private CaptureRequest.Builder previewBuilder;
     private CameraCaptureSession previewSession;
-    Button getpicture;
+    Button btnAction;
+    EditText etPalabraRestante;
+    EditText etPalabraCorreta;
+
     String palabra;
-    ConnectAPI connection = new ConnectAPI();
+    int position;
+
+    byte[] imageBytes;
+
+    final String URL = "http://88.0.109.140:5500/check_frame";
+    public static HashMap<String, String> respuesta;
     private Context ctx;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -80,6 +95,9 @@ public class Camera2Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera2);
         ctx = getApplicationContext();
+        position = -1;
+        //Todo: Llamada a la API de barral
+        palabra = "boa";
         Display display = getWindowManager(). getDefaultDisplay();
         Point size = new Point();
         display. getSize(size);
@@ -87,37 +105,108 @@ public class Camera2Activity extends AppCompatActivity {
         int screenHeight = size.y;
 
         textureView = (TextureView) findViewById(R.id.textureview);
-        getpicture = (Button) findViewById(R.id.btnAction);
+        etPalabraCorreta = (EditText)  findViewById(R.id.etWordChecked);
+        etPalabraRestante = (EditText)  findViewById(R.id.etWordNotChecked);
+
+        btnAction = (Button) findViewById(R.id.btnAction);
         Button back = (Button) findViewById(R.id.btnBack);
+
+
         textureView.setSurfaceTextureListener(surfaceTextureListener);
 
-        /*int textureViewWidth = 13*screenWidth/16;
-        int textureViewHeight = 13*screenHeight/16;*/
         int textureViewWidth = (int) (screenWidth*0.8);
         int textureViewHeight = (int) (screenHeight*0.8);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(textureViewWidth, textureViewHeight);
 
         //Para el prototipo se cogen algunos valores a pincho. Cambian de un móvil a otro
-        layoutParams.setMargins((screenWidth-textureViewWidth)/2 - 20,  screenHeight - (36+textureViewHeight),
-                            (screenWidth-textureViewWidth)/2 - 20, 36);
+        layoutParams.setMargins((screenWidth-textureViewWidth)/2 - 30,  screenHeight - (36+textureViewHeight),
+                            (screenWidth-textureViewWidth)/2 - 30, 36);
 
         textureView.setLayoutParams(layoutParams);
-        //Todo: Llamada a la API de barral
-        //Dejamos de momento una palabra estandar
-        palabra = "hola";
-        getpicture.setOnClickListener(new View.OnClickListener() {
+
+        btnAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int cont = 0;
-                while(cont < palabra.length()) {
-                    char letra = palabra.charAt(cont);
-                    Log.i("HELLO", "" + letra);
-                    getPicture(letra);
-                    while (connection.getRespuesta() == null) ;
-                    if (connection.getRespuesta().get("prediction") == ("" + letra))
-                        cont++;
+                //TODO hacer un enum o similar para casos de este botón. Uno es extraer palabra y mostrarla, otro comprobar letra a letra y el último continuar con el siguiente nivel
+                if(position == -1) { //primera iteración
+                    btnAction.setText("Check");
+                    etPalabraRestante.setText(palabra);
+                    position++;
+                    //Crear check para tratar en background
+
+                    //TODO cargar palabra aquí
+
+                }else if(position < palabra.length()){ //queda palabra
+                    final char letra = palabra.charAt(position);
+                    Log.i("Letra", ""+letra);
+                    getPicture(letra); //extraer foto
+
+                    //esperar a que haya foto
+                    while(imageBytes == null);
+
+                    //enviar y esperar la respuesta de la API
+                    final String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+                    RequestQueue queue = Volley.newRequestQueue(ctx);
+
+                    // Request a string response from the provided URL.
+                    StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            // Display the first 500 characters of the response string.
+
+                            ObjectMapper mapper = new ObjectMapper();
+                            try {
+                                respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            Toast toast1 = Toast.makeText(ctx, "Letra detectada: " + respuesta.get("prediction") + "\nConfianza: " + respuesta.get("confidence") , Toast.LENGTH_LONG);
+                            toast1.setGravity(Gravity.CENTER, 0, 0);
+                            toast1.show();
+                            Log.i("Letra", "Comprobamos " + respuesta.get("prediction") + " frente a " + letra);
+                            if(respuesta.get("prediction").equals(""+letra)){
+                                Log.i("Letra", "Grande niño");
+                                position++;
+                                etPalabraCorreta.setText(etPalabraCorreta.getText()+""+letra);
+                                etPalabraRestante.setText(palabra.substring(position));
+                            }else{
+                                Log.i("Letra", "Nice try");
+                            }
+
+                            Log.i("PETITION",  response);
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.i("PETITION",  error.toString());
+                        }
+                    }) {
+                        @Override
+                        protected Map<String, String> getParams() throws AuthFailureError {
+                            HashMap<String, String> params = new HashMap<String, String>();
+                            params.put("frame", encodedImage);
+                            params.put("letter", "" + letra);
+                            return params;
+                        }
+                    };
+
+                    // Add the request to the RequestQueue.
+                    queue.add(stringRequest);
+
+
+                }else { //acabó
+                    //TODO definir que pasa al acabar
+                    etPalabraCorreta.setText("Muy bien");
+                    position = -1;
+                    btnAction.setText("Start");
+
                 }
-                Log.i("HELLO", "MU BIEN MACHOTE");
+
+
+
+
+
 
             }
         });
@@ -163,11 +252,12 @@ public class Camera2Activity extends AppCompatActivity {
                         image = reader.acquireLatestImage();
 
                         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                        byte[] bytes = new byte[buffer.capacity()];
-                        buffer.get(bytes);
+                        imageBytes = new byte[buffer.capacity()];
+                        buffer.get(imageBytes);
 
-                        connection.sendImage(bytes, ctx, letra);
-                        save(bytes);
+                        //ConnectAPI connection = new ConnectAPI();
+                        //connection.sendImage(bytes, ctx, letra);
+                        //save(bytes);
                     } catch (Exception ee) {
                         ee.printStackTrace();
                     }
@@ -224,6 +314,7 @@ public class Camera2Activity extends AppCompatActivity {
                 public void onConfigureFailed(CameraCaptureSession session) {
                 }
             }, handler);
+
         } catch (Exception e) {
         }
     }
@@ -375,4 +466,5 @@ public class Camera2Activity extends AppCompatActivity {
                 + "IMG_" + timeStamp + ".jpg");
         return mediaFile;
     }
+
 }
