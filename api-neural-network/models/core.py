@@ -27,20 +27,20 @@ def manage_connection():
 
 
 def process_frame(img_queue, detection_queue):
+    frame, letter = img_queue.get()
     print('Processing frame')
-    frame = img_queue.get()
     #frame = cv2.flip(frame, 1)
     frame = cv2.flip(frame, 0)
     image_data = cv2.imencode('.jpg', frame)[1].tostring()
     if not image_data:
         return False
-    answer, confidence = predict(image_data)
+    answer, confidence = predict(image_data, letter.lower())
     print(' - Answer: {}; Confidence: {}'.format(answer, confidence))
     detection_queue.put((answer, float(confidence)))
     return True
 
 
-def predict(image_data):
+def predict(image_data, letter):
     predictions = sess.run(softmax_tensor, \
              {'DecodeJpeg/contents:0': image_data})
     # Sort to show labels of first prediction in order of confidence
@@ -48,9 +48,14 @@ def predict(image_data):
 
     max_score = 0.0
     res = ''
+    letter_extra_score = 0.1
     for node_id in top_k:
         human_string = label_lines[node_id]
         score = predictions[0][node_id]
+        # We are assuming that the person is more or less getting
+        # close to the letter, so we increase a little bit the confidence
+        if human_string == letter and score < 1-letter_extra_score:
+            score += letter_extra_score
         if score > max_score:
             max_score = score
             res = human_string
