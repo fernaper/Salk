@@ -31,13 +31,18 @@ def process_frame(img_queue, detection_queue):
     print('Processing frame')
     #frame = cv2.flip(frame, 1)
     frame = cv2.flip(frame, 0)
-    image_data = cv2.imencode('.jpg', frame)[1].tostring()
-    if not image_data:
-        return False
-    answer, confidence = predict(image_data, letter.lower())
-    print(' - Answer: {}; Confidence: {}'.format(answer, confidence))
-    detection_queue.put((answer, float(confidence)))
-    return True
+    try:
+        image_data = cv2.imencode('.jpg', frame)[1].tostring()
+        if not image_data:
+            detection_queue.put(('', 0.0))
+            return False
+        answer, confidence = predict(image_data, letter.lower())
+        print(' - Answer: {}; Confidence: {}'.format(answer, confidence))
+        detection_queue.put((answer, float(confidence)))
+        return True
+    except Exception as e:
+        detection_queue.put(('', 0.0))
+        return True
 
 
 def predict(image_data, letter):
