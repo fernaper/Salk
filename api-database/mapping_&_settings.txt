@@ -1,0 +1,52 @@
+MAPPING
+
+{
+  "words" : {
+    "mappings" : {
+      "_doc" : {
+        "properties" : {
+          "difficulty" : {
+            "type" : "long"
+          },
+          "lang" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "word" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+SETTINGS
+{
+  "words" : {
+    "settings" : {
+      "index" : {
+        "creation_date" : "1547488308112",
+        "number_of_shards" : "5",
+        "number_of_replicas" : "1",
+        "uuid" : "tn3QTvOjTsOyN8vSkW2v-w",
+        "version" : {
+          "created" : "6050399"
+        },
+        "provided_name" : "my_index"
+      }
+    }
+  }
+}
