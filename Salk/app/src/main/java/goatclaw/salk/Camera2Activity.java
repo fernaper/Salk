@@ -60,6 +60,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class Camera2Activity extends AppCompatActivity {
     private Size previewsize;
@@ -82,7 +83,7 @@ public class Camera2Activity extends AppCompatActivity {
     private Context ctx;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
-
+    final int REQUEST_WRITE_STORAGE = 1;
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
         ORIENTATIONS.append(Surface.ROTATION_90, 0);
@@ -96,8 +97,10 @@ public class Camera2Activity extends AppCompatActivity {
         setContentView(R.layout.activity_camera2);
         ctx = getApplicationContext();
         position = -1;
+
+        palabra = "";
         //Todo: Llamada a la API de barral
-        palabra = "boa";
+
         Display display = getWindowManager(). getDefaultDisplay();
         Point size = new Point();
         display. getSize(size);
@@ -130,13 +133,18 @@ public class Camera2Activity extends AppCompatActivity {
                 //TODO hacer un enum o similar para casos de este botón. Uno es extraer palabra y mostrarla, otro comprobar letra a letra y el último continuar con el siguiente nivel
                 if(position == -1) { //primera iteración
                     btnAction.setText("Check");
-                    etPalabraRestante.setText(palabra);
+                    etPalabraCorreta.setText("");
                     position++;
-                    //Crear check para tratar en background
 
                     //TODO cargar palabra aquí
+                    String[] palabras = {"boa", "raca", "chundasvinto", "rufus", "hola", "vida", "soja", "cabra"};
+                    int rnd = new Random().nextInt(palabras.length);
+                    palabra = palabras[rnd];
+
+                    etPalabraRestante.setText(palabra);
 
                 }else if(position < palabra.length()){ //queda palabra
+                    btnAction.setEnabled(false);
                     final char letra = palabra.charAt(position);
                     Log.i("Letra", ""+letra);
                     getPicture(letra); //extraer foto
@@ -160,19 +168,29 @@ public class Camera2Activity extends AppCompatActivity {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-
-                            Toast toast1 = Toast.makeText(ctx, "Letra detectada: " + respuesta.get("prediction") + "\nConfianza: " + respuesta.get("confidence") , Toast.LENGTH_LONG);
-                            toast1.setGravity(Gravity.CENTER, 0, 0);
-                            toast1.show();
+                            Toast toast;
                             Log.i("Letra", "Comprobamos " + respuesta.get("prediction") + " frente a " + letra);
                             if(respuesta.get("prediction").equals(""+letra)){
                                 Log.i("Letra", "Grande niño");
                                 position++;
                                 etPalabraCorreta.setText(etPalabraCorreta.getText()+""+letra);
                                 etPalabraRestante.setText(palabra.substring(position));
+
+                                if(position == palabra.length()){ //Acierta toda la palabra
+                                    toast = Toast.makeText(ctx, "Muy bien", Toast.LENGTH_LONG);
+                                    etPalabraCorreta.setText("Muy bien");
+                                    position = -1;
+                                    btnAction.setText("Siguiente");
+                                }else{
+                                    toast = Toast.makeText(ctx, "Correcto", Toast.LENGTH_LONG);
+                                }
                             }else{
+                                toast = Toast.makeText(ctx, "Incorrecto, vuelva a intentarlo", Toast.LENGTH_LONG);
                                 Log.i("Letra", "Nice try");
                             }
+                            btnAction.setEnabled(true);
+                            toast.setGravity(Gravity.CENTER, 0, 0);
+                            toast.show();
 
                             Log.i("PETITION",  response);
                         }
@@ -194,20 +212,12 @@ public class Camera2Activity extends AppCompatActivity {
                     // Add the request to the RequestQueue.
                     queue.add(stringRequest);
 
-
-                }else { //acabó
-                    //TODO definir que pasa al acabar
+                }else { //Just in case!
+                    //Aquí no debería entrar
                     etPalabraCorreta.setText("Muy bien");
                     position = -1;
                     btnAction.setText("Start");
-
                 }
-
-
-
-
-
-
             }
         });
 
@@ -334,6 +344,8 @@ public class Camera2Activity extends AppCompatActivity {
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_WRITE_STORAGE);
+                openCamera();
                 return;
             }
             manager.openCamera(camerId, stateCallback, null);
@@ -341,6 +353,7 @@ public class Camera2Activity extends AppCompatActivity {
         {
         }
     }
+
     private TextureView.SurfaceTextureListener surfaceTextureListener=new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -357,6 +370,7 @@ public class Camera2Activity extends AppCompatActivity {
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
         }
     };
+
     private CameraDevice.StateCallback stateCallback=new CameraDevice.StateCallback() {
         @Override
         public void onOpened(CameraDevice camera) {
@@ -370,6 +384,7 @@ public class Camera2Activity extends AppCompatActivity {
         public void onError(CameraDevice camera, int error) {
         }
     };
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -378,6 +393,7 @@ public class Camera2Activity extends AppCompatActivity {
             cameraDevice.close();
         }
     }
+
     void  startCamera()
     {
         if(cameraDevice==null||!textureView.isAvailable()|| previewsize==null)
@@ -414,6 +430,7 @@ public class Camera2Activity extends AppCompatActivity {
         {
         }
     }
+
     void getChangedPreview()
     {
         if(cameraDevice==null)
@@ -429,12 +446,14 @@ public class Camera2Activity extends AppCompatActivity {
             previewSession.setRepeatingRequest(previewBuilder.build(), null, handler);
         }catch (Exception e){}
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         //getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -447,6 +466,7 @@ public class Camera2Activity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
     private static File getOutputMediaFile() {
         File mediaStorageDir = new File(
                 Environment
