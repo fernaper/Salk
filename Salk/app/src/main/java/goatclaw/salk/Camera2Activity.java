@@ -1,6 +1,7 @@
 package goatclaw.salk;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
@@ -35,6 +36,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -69,14 +71,44 @@ public class Camera2Activity extends AppCompatActivity {
     private CameraDevice cameraDevice;
     private CaptureRequest.Builder previewBuilder;
     private CameraCaptureSession previewSession;
-    Button btnAction;
-    EditText etPalabraRestante;
-    EditText etPalabraCorreta;
+    private Button btnAction;
+    private EditText etPalabraRestante;
+    private EditText etPalabraCorreta;
+    private ImageView pictogram;
 
-    String palabra;
-    int position;
+    private String palabra;
+    private int position;
+    private byte[] imageBytes;
 
-    byte[] imageBytes;
+    public enum Letras
+    {
+        a("a", 1);
+        /*
+        a("a", android.R.drawable.a.PNG), b("b", android.R.drawable.b), c("c", android.R.drawable.c),
+        d("d", android.R.drawable.d), e("e", android.R.drawable.e), f("f", android.R.drawable.f);
+        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
+        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
+        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
+        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
+        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
+        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
+        a("a", android.R.drawable.a), a("a", android.R.drawable.a);*/
+        private String letra;
+        private int draw;
+
+        private Letras (String l, int d){
+            this.letra = l;
+            this.draw = d;
+        }
+
+        public String getLetra() {
+            return letra;
+        }
+
+        public int getDraw() {
+            return draw;
+        }
+    }
 
     final String URL = "http://88.0.109.140:5500/check_frame";
     public static HashMap<String, String> respuesta;
@@ -110,7 +142,7 @@ public class Camera2Activity extends AppCompatActivity {
         textureView = (TextureView) findViewById(R.id.textureview);
         etPalabraCorreta = (EditText)  findViewById(R.id.etWordChecked);
         etPalabraRestante = (EditText)  findViewById(R.id.etWordNotChecked);
-
+        pictogram = (ImageView) findViewById(R.id.pictogram);
         btnAction = (Button) findViewById(R.id.btnAction);
         Button back = (Button) findViewById(R.id.btnBack);
 
@@ -158,6 +190,7 @@ public class Camera2Activity extends AppCompatActivity {
 
                     // Request a string response from the provided URL.
                     StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                        @SuppressLint("SetTextI18n")
                         @Override
                         public void onResponse(String response) {
                             // Display the first 500 characters of the response string.
@@ -218,6 +251,8 @@ public class Camera2Activity extends AppCompatActivity {
                     position = -1;
                     btnAction.setText("Start");
                 }
+                int id = getResources().getIdentifier("goatclaw.salk:drawable/" + palabra.substring(0,1), null, null);
+                pictogram.setImageResource(id);
             }
         });
 
