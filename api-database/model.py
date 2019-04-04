@@ -13,24 +13,6 @@ def connection():
     return res
 
 
-def get_word(language):
-    query = {
-    "query": {
-        "function_score" : {
-          "query" : { "match": {"lang": language}},
-          "random_score" : {}
-        }
-      },
-     "size":1
-
-    }
-
-    res = es.search(index="words", body=query)
-    return res['hits']['hits'][0]['_source']
-    
-
-
-
 def get_word_with_difficulty(language, difficulty):
     query = {
     "query": {
@@ -59,15 +41,30 @@ def get_word_with_difficulty(language, difficulty):
      }
 
     res = es.search(index="words",doc_type='_doc', body=query)
-    return res['hits']['hits'][0]['_source'] 
+    return res['hits']['hits'][0]['_source']['word'] 
+    
 
 #TODO
 def get_phrase_with_difficulty(language, difficulty):
     pass
 
 
+
+def get_user(user_name):
+    query = {
+        "query": {
+            "match": {
+                "name": "antonio"
+            }
+        }
+    }
+
+    res = es.search(index="users",doc_type='_doc', body=query)
+    return res['hits']['hits'][0]['_source']['lang']
+
+
 def insert_language(word_dict, lang):
-       
+
     actions = [ 
         {
             "_index": "words",
@@ -83,19 +80,35 @@ def insert_language(word_dict, lang):
     return res
 
 
-#TODO (optional)
-def set_difficulty(word):
-    #Assign a difficulty regarding a different parameter (not the length)
-    pass
-
-#TODO
-'''def gendata():
-    mywords = ['foo', 'bar', 'baz']
-    for word in mywords:
-        yield {
-            "_index": "mywords",
-            "_type": "document",
-            "doc": {"word": word},
+def set_language(user_name, lang):
+    query = {
+        "script": {
+            "source": "ctx._source.language='{}'".format(lang),
+            "lang": "painless"
+        },
+        "query": {
+            "match": {
+                "name": user_name
+            }
         }
-    bulk(es, gendata())
-'''
+    }
+
+    res = es.update_by_query(index="users",doc_type='_doc', body=query)
+    return
+
+
+def set_difficulty(user_name, difficulty):
+    query = {
+        "script": {
+            "source": "ctx._source.difficulty='{}'".format(difficulty),
+            "lang": "painless"
+        },
+        "query": {
+            "match": {
+                "name": user_name
+            }
+        }
+    }
+
+    res = es.update_by_query(index="users",doc_type='_doc', body=query)
+    return
