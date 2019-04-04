@@ -1,6 +1,6 @@
 from datetime import datetime
 import requests
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, helpers
 es = Elasticsearch(
     ['localhost'],
     #http_auth=('ubuntu', 'salkthebest'),
@@ -11,6 +11,7 @@ es = Elasticsearch(
 def connection():
     res = requests.get('http://localhost:9200')
     return res
+
 
 def get_word(language):
     query = {
@@ -25,12 +26,12 @@ def get_word(language):
     }
 
     res = es.search(index="words", body=query)
-    print(res)
-    return
+    return res['hits']['hits'][0]['_source']
+    
 
 
 
-def get_word_with_difficulty(difficulty):
+def get_word_with_difficulty(language, difficulty):
     query = {
     "query": {
         "function_score" : {
@@ -58,8 +59,7 @@ def get_word_with_difficulty(difficulty):
      }
 
     res = es.search(index="words",doc_type='_doc', body=query)
-    print(res)
-    return res
+    return res['hits']['hits'][0]['_source'] 
 
 #TODO
 def get_phrase_with_difficulty(language, difficulty):
@@ -67,12 +67,19 @@ def get_phrase_with_difficulty(language, difficulty):
 
 
 def insert_language(word_dict, lang):
-    for word in word_dict:
-        insert ={
-        "word":word,
-        "lang":lang,
-        "difficulty": len(word)}
-        res = es.index(index='my_index',doc_type='_doc',body=insert)
+       
+    actions = [ 
+        {
+            "_index": "words",
+            "_type": "_doc",
+            "_source": {
+                "word" : word,
+                "lang": lang,
+                "difficulty": len(word)}
+        }
+        for word in word_dict
+    ]
+    res = helpers.bulk(es, actions)
     return res
 
 
