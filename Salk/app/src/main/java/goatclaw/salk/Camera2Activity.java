@@ -45,10 +45,14 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -78,40 +82,15 @@ public class Camera2Activity extends AppCompatActivity {
 
     private String palabra;
     private int position;
+    private int difficulty = 7;
     private byte[] imageBytes;
 
-    public enum Letras
-    {
-        a("a", 1);
-        /*
-        a("a", android.R.drawable.a.PNG), b("b", android.R.drawable.b), c("c", android.R.drawable.c),
-        d("d", android.R.drawable.d), e("e", android.R.drawable.e), f("f", android.R.drawable.f);
-        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
-        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
-        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
-        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
-        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
-        a("a", android.R.drawable.a), a("a", android.R.drawable.a), a("a", android.R.drawable.a),
-        a("a", android.R.drawable.a), a("a", android.R.drawable.a);*/
-        private String letra;
-        private int draw;
 
-        private Letras (String l, int d){
-            this.letra = l;
-            this.draw = d;
-        }
+    private final String URL_NEURONAL_NETWORK = "http://88.0.109.140:5500/check_frame";
+    private final String URL_DATABASE = "http://92.176.178.247:5754/";
 
-        public String getLetra() {
-            return letra;
-        }
+    private static HashMap<String, String> responseNN;
 
-        public int getDraw() {
-            return draw;
-        }
-    }
-
-    final String URL = "http://88.0.109.140:5500/check_frame";
-    public static HashMap<String, String> respuesta;
     private Context ctx;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -162,18 +141,59 @@ public class Camera2Activity extends AppCompatActivity {
         btnAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO hacer un enum o similar para casos de este botón. Uno es extraer palabra y mostrarla, otro comprobar letra a letra y el último continuar con el siguiente nivel
                 if(position == -1) { //primera iteración
-                    btnAction.setText("Check");
                     etPalabraCorreta.setText("");
-                    position++;
 
-                    //TODO cargar palabra aquí
+                    RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
+                    JSONObject json = new JSONObject();
+                    try {
+                        json.put("User","usuario");
+                        json.put("Difficulty",difficulty);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL_DATABASE+"get_word/", json,
+                            new Response.Listener<JSONObject>() {
+                                @SuppressLint("SetTextI18n")
+                                @Override
+                                public void onResponse(JSONObject response) {
+
+
+                                    Log.i("PETITION_DB",  response.toString());
+                                    /*
+                                    ObjectMapper mapper = new ObjectMapper();
+                                    try {
+                                        responseDB = mapper.readValue(response.toString(), new TypeReference<Map<String, String>>(){});
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }*/
+
+                                    try {
+
+                                        palabra = response.get("word").toString();
+                                        Log.i("PETITION_DB",  palabra);
+                                        btnAction.setText("Check");
+                                        position++;
+                                        etPalabraRestante.setText(palabra);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                            }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.i("PETITION_DB",  error.toString());
+                        }
+                    });
+                    queueDatabase.add(jsonObjectRequest);
+
+                    /*
                     String[] palabras = {"boa", "raca", "chundasvinto", "rufus", "hola", "vida", "soja", "cabra"};
                     int rnd = new Random().nextInt(palabras.length);
                     palabra = palabras[rnd];
-
-                    etPalabraRestante.setText(palabra);
+                    */
 
                 }else if(position < palabra.length()){ //queda palabra
                     btnAction.setEnabled(false);
@@ -186,10 +206,10 @@ public class Camera2Activity extends AppCompatActivity {
 
                     //enviar y esperar la respuesta de la API
                     final String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-                    RequestQueue queue = Volley.newRequestQueue(ctx);
+                    RequestQueue queueNN = Volley.newRequestQueue(ctx);
 
-                    // Request a string response from the provided URL.
-                    StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                    // Request a string response from the provided URL_NEURONAL_NETWORK.
+                    StringRequest stringRequest = new StringRequest(Request.Method.POST, URL_NEURONAL_NETWORK, new Response.Listener<String>() {
                         @SuppressLint("SetTextI18n")
                         @Override
                         public void onResponse(String response) {
@@ -197,13 +217,13 @@ public class Camera2Activity extends AppCompatActivity {
 
                             ObjectMapper mapper = new ObjectMapper();
                             try {
-                                respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
+                                responseNN = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                             Toast toast;
-                            Log.i("Letra", "Comprobamos " + respuesta.get("prediction") + " frente a " + letra);
-                            if(respuesta.get("prediction").equals(""+letra)){
+                            Log.i("Letra", "Comprobamos " + responseNN.get("prediction") + " frente a " + letra);
+                            if(responseNN.get("prediction").equals(""+letra)){
                                 Log.i("Letra", "Grande niño");
                                 position++;
                                 etPalabraCorreta.setText(etPalabraCorreta.getText()+""+letra);
@@ -243,7 +263,7 @@ public class Camera2Activity extends AppCompatActivity {
                     };
 
                     // Add the request to the RequestQueue.
-                    queue.add(stringRequest);
+                    queueNN.add(stringRequest);
 
                 }else { //Just in case!
                     //Aquí no debería entrar
