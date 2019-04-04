@@ -32,6 +32,84 @@ MAPPING
   }
 }
 
+curl -X POST "localhost:9200/users/_doc" -H 'Content-Type: application/json' -d'
+{
+    "name" : "fernando",
+    "password" : "opencv-draw-tools-fernaperg",
+    "language" : "spanish",
+    "level" : "1"
+}
+'
+
+curl -X POST "localhost:9200/users/_doc" -H 'Content-Type: application/json' -d'
+{
+    "name" : "antonio",
+    "password" : "raca",
+    "language" : "english",
+    "level" : "3"
+}
+'
+
+curl -X POST "localhost:9200/users/_doc" -H 'Content-Type: application/json' -d'
+{
+    "name" : "juan",
+    "password" : "f",
+    "language" : "french",
+    "level" : "1"
+}
+'
+
+curl -X POST "localhost:9200/users/_doc" -H 'Content-Type: application/json' -d'
+{
+    "name" : "enrique",
+    "password" : "payaso",
+    "language" : "german",
+    "level" : "1"
+}
+'
+
+
+
+{
+  "users" : {
+    "mappings" : {
+      "_doc" : {
+        "properties" : {
+          "name" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "password" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "language" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "level" : {
+            "type" : "long"
+          }
+        }
+      }
+    }
+  }
+}
 
 SETTINGS
 {
