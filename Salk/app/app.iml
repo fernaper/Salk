@@ -129,17 +129,16 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Gradle: com.android.support.constraint:constraint-layout-solver:1.0.2@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:appcompat-v7-25.3.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-fragment-25.3.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-fragment-25.4.0" level="project" />
     <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.9.8@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-annotations:25.3.1@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test.espresso:espresso-idling-resource-2.2.2" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-media-compat-25.3.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-media-compat-25.4.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: javax.annotation:javax.annotation-api:1.2@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.squareup.retrofit2:retrofit:2.4.0@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test.espresso:espresso-core-2.2.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.squareup:javawriter:2.1.1@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:animated-vector-drawable-25.3.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-compat-25.3.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-compat-25.4.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:rules-0.5" level="project" />
     <orderEntry type="library" name="Gradle: com.android.volley:volley-1.1.1" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:transition-25.3.1" level="project" />
@@ -147,11 +146,12 @@
     <orderEntry type="library" name="Gradle: com.squareup.okio:okio:1.14.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.9.0@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: javax.inject:javax.inject:1@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-v4-25.3.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-v4-25.4.0" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support.constraint:constraint-layout-1.0.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: junit:junit:4.12@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-core:1.3@jar" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-core-ui-25.3.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-core-ui-25.4.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-annotations:25.4.0@jar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:runner-0.5" level="project" />
     <orderEntry type="library" name="Gradle: com.squareup.okhttp3:okhttp:3.10.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.8.2@jar" level="project" />
@@ -163,7 +163,7 @@
     <orderEntry type="library" name="Gradle: com.android.support:recyclerview-v7-25.3.1" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:design-25.3.1" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-vector-drawable-25.3.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.android.support:support-core-utils-25.3.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.android.support:support-core-utils-25.4.0" level="project" />
     <orderEntry type="library" name="Gradle: android-android-25" level="project" />
   </component>
 </module>

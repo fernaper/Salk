@@ -37,6 +37,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -90,6 +91,7 @@ public class Camera2Activity extends AppCompatActivity {
     private final String URL_DATABASE = "http://92.176.178.247:5754/";
 
     private static HashMap<String, String> responseNN;
+    private static HashMap<String, String> responseDB;
 
     private Context ctx;
 
@@ -144,41 +146,33 @@ public class Camera2Activity extends AppCompatActivity {
                 if(position == -1) { //primera iteración
                     etPalabraCorreta.setText("");
 
+                    //TODO: establecer la dificultad como un número aleatorio acorde con el nivel de usuario
+
                     RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
-                    JSONObject json = new JSONObject();
-                    try {
-                        json.put("User","usuario");
-                        json.put("Difficulty",difficulty);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, URL_DATABASE+"get_word/", json,
-                            new Response.Listener<JSONObject>() {
-                                @SuppressLint("SetTextI18n")
+                    StringRequest databaseRequest = new StringRequest(Request.Method.POST, URL_DATABASE+"get_word", new Response.Listener<String>() {
+                        @SuppressLint("SetTextI18n")
                                 @Override
-                                public void onResponse(JSONObject response) {
+                                public void onResponse(String response) {
 
 
-                                    Log.i("PETITION_DB",  response.toString());
-                                    /*
+                                    Log.i("PETITION_DB",  response);
+
                                     ObjectMapper mapper = new ObjectMapper();
                                     try {
-                                        responseDB = mapper.readValue(response.toString(), new TypeReference<Map<String, String>>(){});
+                                        responseDB = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
                                     } catch (IOException e) {
                                         e.printStackTrace();
-                                    }*/
-
-                                    try {
-
-                                        palabra = response.get("word").toString();
-                                        Log.i("PETITION_DB",  palabra);
-                                        btnAction.setText("Check");
-                                        position++;
-                                        etPalabraRestante.setText(palabra);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
                                     }
+
+
+                                    palabra = responseDB.get("word");
+                                    Log.i("PETITION_DB",  palabra);
+                                    btnAction.setText("Check");
+                                    position++;
+                                    etPalabraRestante.setText(palabra);
+                                    int id = getResources().getIdentifier("goatclaw.salk:drawable/" + palabra.substring(0,1), null, null);
+                                    pictogram.setImageResource(id);
+
 
                                 }
                             }, new Response.ErrorListener() {
@@ -186,8 +180,16 @@ public class Camera2Activity extends AppCompatActivity {
                         public void onErrorResponse(VolleyError error) {
                             Log.i("PETITION_DB",  error.toString());
                         }
-                    });
-                    queueDatabase.add(jsonObjectRequest);
+                    }) {
+                        @Override
+                        protected Map<String, String> getParams() throws AuthFailureError {
+                            HashMap<String, String> params = new HashMap<String, String>();
+                            params.put("user", "enrique");
+                            params.put("difficulty", "" + difficulty);
+                            return params;
+                        }
+                    };
+                    queueDatabase.add(databaseRequest);
 
                     /*
                     String[] palabras = {"boa", "raca", "chundasvinto", "rufus", "hola", "vida", "soja", "cabra"};
@@ -209,7 +211,7 @@ public class Camera2Activity extends AppCompatActivity {
                     RequestQueue queueNN = Volley.newRequestQueue(ctx);
 
                     // Request a string response from the provided URL_NEURONAL_NETWORK.
-                    StringRequest stringRequest = new StringRequest(Request.Method.POST, URL_NEURONAL_NETWORK, new Response.Listener<String>() {
+                    StringRequest neuronalNetworkRequest = new StringRequest(Request.Method.POST, URL_NEURONAL_NETWORK, new Response.Listener<String>() {
                         @SuppressLint("SetTextI18n")
                         @Override
                         public void onResponse(String response) {
@@ -263,7 +265,7 @@ public class Camera2Activity extends AppCompatActivity {
                     };
 
                     // Add the request to the RequestQueue.
-                    queueNN.add(stringRequest);
+                    queueNN.add(neuronalNetworkRequest);
 
                 }else { //Just in case!
                     //Aquí no debería entrar
@@ -271,8 +273,8 @@ public class Camera2Activity extends AppCompatActivity {
                     position = -1;
                     btnAction.setText("Start");
                 }
-                int id = getResources().getIdentifier("goatclaw.salk:drawable/" + palabra.substring(0,1), null, null);
-                pictogram.setImageResource(id);
+                /*LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(150, 150);
+                pictogram.setLayoutParams(layoutParams);*/
             }
         });
 
