@@ -17,6 +17,8 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
 public class LoginActivity extends AppCompatActivity {
+    protected static final String GOOGLE_ACCOUNT = "goatclaw.salk.GOOGLE_ACCOUNT";
+    protected static final String CLIENT = "goatclaw.salk.CLIENT";
     private static final String TAG = "AndroidClarified";
     public static  GoogleSignInClient googleSignInClient;
     private SignInButton googleSignInButton;
@@ -44,26 +46,26 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK)
-            switch (requestCode) {
-                case 101:
-                    try {
-                        // The Task returned from this call is always completed, no need to attach
-                        // a listener.
-                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-                        GoogleSignInAccount account = task.getResult(ApiException.class);
-                        onLoggedIn(account);
-                    } catch (ApiException e) {
-                        // The ApiException status code indicates the detailed failure reason.
-                        Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
-                    }
-                    break;
-            }
+
+        switch (requestCode) {
+            case 101:
+                try {
+                    // The Task returned from this call is always completed, no need to attach
+                    // a listener.
+                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                    GoogleSignInAccount account = task.getResult(ApiException.class);
+                    onLoggedIn(account);
+                } catch (ApiException e) {
+                    // The ApiException status code indicates the detailed failure reason.
+                    Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+                }
+                break;
+        }
     }
 
     private void onLoggedIn(GoogleSignInAccount googleSignInAccount) {
-        Intent intent = new Intent(this, ProfileActivity.class);
-        intent.putExtra(ProfileActivity.GOOGLE_ACCOUNT, googleSignInAccount);
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra(LoginActivity.GOOGLE_ACCOUNT, googleSignInAccount);
         startActivity(intent);
         finish();
     }
@@ -71,12 +73,15 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        GoogleSignInAccount alreadyloggedAccount = GoogleSignIn.getLastSignedInAccount(this);
-        if (alreadyloggedAccount != null) {
-            Toast.makeText(this, "Already Logged In", Toast.LENGTH_SHORT).show();
-            onLoggedIn(alreadyloggedAccount);
-        } else {
-            Log.d(TAG, "Not logged in");
+        // Check for existing Google Sign In account, if the user is already signed in
+        // the GoogleSignInAccount will be non-null.
+
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        if(account != null) {
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra(LoginActivity.GOOGLE_ACCOUNT, account);
+            startActivity(intent);
+            finish();
         }
     }
 }

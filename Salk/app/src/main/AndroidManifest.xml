@@ -19,6 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:screenOrientation="portrait"
         tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".SplashScreen">
             <intent-filter>
@@ -40,10 +41,6 @@
             android:theme="@style/AppTheme" />
         <activity
             android:name=".LoginActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".ProfileActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme" />
         <activity
