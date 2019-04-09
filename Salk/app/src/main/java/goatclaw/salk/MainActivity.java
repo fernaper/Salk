@@ -1,6 +1,7 @@
 package goatclaw.salk;
 
 import android.content.Intent;
+import android.media.audiofx.Equalizer;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -20,6 +21,13 @@ import com.google.android.gms.common.SignInButton;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    //atributos estáticos para la configuración de cada usuario
+    public static String language = "spanish";
+    public static int level = 0; //nivel del usuario: 0-fácil, 1-medio, 2-difícil
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,6 +35,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //TODO: obtener datos de los usuarios con una llamada a la API
 
         Button btnScan = (Button) findViewById(R.id.btnContinue);
         btnScan.setOnClickListener(new View.OnClickListener() {
@@ -74,6 +83,8 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(getApplicationContext(), SettingsActivity.class);
+            startActivity(settingsIntent);
             return true;
         }
 
