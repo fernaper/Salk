@@ -20,6 +20,8 @@ def process_folder(folder, output_folder):
 
 if __name__ == '__main__':
     if len(sys.argv) > 2:
+        if len(sys.argv) > 3:
+            SCALE = float(sys.argv[3])
         process_folder(sys.argv[1], sys.argv[2])
     else:
         print('Needed path to input folder and output folder')

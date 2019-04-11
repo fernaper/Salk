@@ -53,7 +53,7 @@ def predict(image_data, letter):
 
     max_score = 0.0
     res = ''
-    letter_extra_score = 0.1
+    letter_extra_score = 0.3
     for node_id in top_k:
         human_string = label_lines[node_id]
         score = predictions[0][node_id]
