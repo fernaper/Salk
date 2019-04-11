@@ -1,6 +1,7 @@
 package goatclaw.salk;
 
 
+import android.annotation.SuppressLint;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -33,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ConnectAPI extends AsyncTask<String, Boolean, Boolean> {
 
     final String URL = "http://88.0.109.140:5500/check_frame";
+    private static final String URL_DATABASE = "http://92.176.178.247:5754/";
     public static HashMap<String, String> respuesta;
 
 
@@ -80,6 +82,34 @@ public class ConnectAPI extends AsyncTask<String, Boolean, Boolean> {
         queue.add(stringRequest);
     }
 
+    public static void sendUserName(final String username, final String language, final Context ctx){
+        RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
+        StringRequest databaseRequest = new StringRequest(Request.Method.POST, URL_DATABASE+"create_user", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }                Log.i("PETITION_DB",  response.toString());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("PETITION_DB",  error.toString());
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("user", username);
+                params.put("language", language);
+                return params;
+            }
+        };
+        queueDatabase.add(databaseRequest);
+    }
 
     public HashMap<String, String> getRespuesta(){ return respuesta; }
 

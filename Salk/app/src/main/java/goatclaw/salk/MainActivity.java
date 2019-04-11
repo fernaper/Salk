@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -20,6 +21,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -30,6 +32,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -45,26 +49,38 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_main);
+
         //Cogemos la info de google
         account = getIntent().getParcelableExtra(LoginActivity.GOOGLE_ACCOUNT);
-        //TODO: POR ALGUNA RAZON NO PILLA R.id.ivPhoto, tvName, tvEmail, devuelve null
 
-        /*
-        ImageView photo = (ImageView) findViewById(R.id.ivPhoto);
-        TextView nombre = (TextView) findViewById(R.id.tvName);
-        TextView email = (TextView) findViewById(R.id.tvEmail);
+        //Mando el user a la api de barral
+        ConnectAPI.sendUserName(account.getDisplayName(), Locale.getDefault().getDisplayLanguage(), this);
 
-        nombre.setText(account.getDisplayName());
+        if(ConnectAPI.respuesta.get("warning") == ""){
+            SettingsActivity.setLanguage(Locale.getDefault().getDisplayLanguage());
+            SettingsActivity.setUsername(account.getDisplayName());
+        } else {
+            logOut();
+            Toast toast1 = Toast.makeText(this, "Ha habido un problema al iniciar sesión con la aplicación", Toast.LENGTH_LONG);
+            toast1.setGravity(Gravity.CENTER, 0, 0);
+            toast1.show();
+        }
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        TextView name = (TextView) headerView.findViewById(R.id.tvName);
+        TextView email = (TextView) headerView.findViewById(R.id.tvEmail);
+        ImageView photo = (ImageView) headerView.findViewById(R.id.ivPhoto);
+
+        name.setText(account.getDisplayName());
         email.setText(account.getEmail());
 
 
-        if(photo == null) Log.i("HORROR", "es null");
-        Glide.with(getApplicationContext()).load(account.getPhotoUrl())
-                .thumbnail(0.5f)
-                .crossFade()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
+
+        Glide.with(this).load(account.getPhotoUrl().toString())
+                .override(150,150)
                 .into(photo);
-        */
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -86,7 +102,6 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
 
@@ -139,7 +154,7 @@ public class MainActivity extends AppCompatActivity
             Intent transalateIntent = new Intent(getApplicationContext(), TranslateActivity.class);
             startActivity(transalateIntent);
 
-        } else if (id == R.id.nav_translate) {
+        } else if (id == R.id.nav_sign_out) {
             logOut();
 
         } else if (id == R.id.nav_share){
