@@ -3,17 +3,17 @@ import requests
 from elasticsearch import Elasticsearch, helpers
 es = Elasticsearch(
     ['localhost'],
-    #http_auth=('ubuntu', 'salkthebest'),
     scheme="http",
     port=9200,
 )
+
 
 def connection():
     res = requests.get('http://localhost:9200')
     return res
 
 
-def get_word_with_difficulty(language, difficulty):
+def get_word_with_difficulty(language, difficulty, exclude_words=[]):
     query = {
     "query": {
         "function_score" : {
@@ -30,9 +30,14 @@ def get_word_with_difficulty(language, difficulty):
                     "lang": language
                   }
                 }
+              ],
+              "must_not": [
+                {
+                    "term" : {"word": exclude_words}
+                }
               ]
             }
-        	},
+          },
           "random_score" : {}
         }
       },
@@ -44,9 +49,16 @@ def get_word_with_difficulty(language, difficulty):
     return res['hits']['hits'][0]['_source']['word'] 
     
 
-#TODO
-def get_phrase_with_difficulty(language, difficulty):
-    pass
+
+def get_phrase_with_difficulty(language, difficulty, word_number):
+    word_list = ''
+    no_word = []
+    for i in range(0,word_number):
+        word = get_word_with_difficulty(language, difficulty, no_word)
+        no_word.append(word)
+        word_list += word
+
+    return word_list
 
 
 
@@ -78,6 +90,16 @@ def insert_language(word_dict, lang):
     ]
     res = helpers.bulk(es, actions)
     return res
+
+
+def create_user(user_name, language='spanish'):
+    query = {
+        "name" : user_name,
+        "language" : language,
+        "difficulty" : 1,
+    }
+
+    res = es.index(index="users",doc_type='_doc', body=query)
 
 
 def set_language(user_name, lang):
@@ -112,3 +134,18 @@ def set_difficulty(user_name, difficulty):
 
     res = es.update_by_query(index="users",doc_type='_doc', body=query)
     return
+
+
+def get_score(user_name):
+     query = {
+        "query": {
+            "match": {
+                "name": user_name
+            }
+        }
+    }
+
+    res = es.search(index="users",doc_type='_doc', body=query)
+    score = res['hits']['hits'][0]['_source']['score']
+    total_words = res['hits']['hits'][0]['_source']['total_words']
+    
