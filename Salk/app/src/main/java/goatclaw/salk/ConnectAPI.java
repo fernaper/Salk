@@ -84,31 +84,30 @@ public class ConnectAPI extends AsyncTask<String, Boolean, Boolean> {
 
     public static void sendUserName(final String username, final String language, final Context ctx){
         RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
-        StringRequest databaseRequest = new StringRequest(Request.Method.POST, URL_DATABASE+"create_user", new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                ObjectMapper mapper = new ObjectMapper();
-                try {
-                    respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }                Log.i("PETITION_DB",  response.toString());
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.i("PETITION_DB",  error.toString());
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                HashMap<String, String> params = new HashMap<String, String>();
-                params.put("user", username);
-                params.put("language", language);
-                return params;
-            }
-        };
-        queueDatabase.add(databaseRequest);
+
+        if (language != null && !language.equals("") && username != null && !username.equals("")) {
+            String uri = String
+                    .format(URL_DATABASE + "create_user?user=%s&language=%s", username, language);
+
+            StringRequest myReq = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    try {
+                        respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Log.i("PETITION_DB",  response.toString());
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("PETITION_DB",  error.toString());
+                }
+            });
+            queueDatabase.add(myReq);
+        }
     }
 
     public HashMap<String, String> getRespuesta(){ return respuesta; }

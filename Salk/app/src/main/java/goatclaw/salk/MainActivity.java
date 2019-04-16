@@ -35,11 +35,13 @@ import com.google.android.gms.tasks.Task;
 
 import java.util.Locale;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     //atributos estáticos para la configuración de cada usuario
-    public static String language = "spanish";
+    public static String language;
     public static int level = 0; //nivel del usuario: 0-fácil, 1-medio, 2-difícil
     public static GoogleSignInAccount account;
     private GoogleSignInClient googleSignInClient;
@@ -53,14 +55,34 @@ public class MainActivity extends AppCompatActivity
         //Cogemos la info de google
         account = getIntent().getParcelableExtra(LoginActivity.GOOGLE_ACCOUNT);
 
-        //Mando el user a la api de barral
-        ConnectAPI.sendUserName(account.getDisplayName(), Locale.getDefault().getDisplayLanguage(), this);
+        String lang = Locale.getDefault().getLanguage();
 
-        if(ConnectAPI.respuesta.get("warning") == ""){
+        switch(lang){
+            case "es":
+                language = "spanish";
+                break;
+            case "en":
+                language = "english";
+                break;
+            case "fr":
+                language = "french";
+                break;
+            case "de":
+                language = "german";
+                break;
+            default:
+                language = "spanish";
+        }
+
+        //Mando el user a la api de barral
+        ConnectAPI.sendUserName(account.getGivenName().toLowerCase(), language, this);
+
+        //TODO: EN CUANTO FUNCIONE LA LLAMADA A LA API DE BARRAL HAY QUE DESCOMENTAR EL LOGOUT DEL ELSE
+        if(ConnectAPI.respuesta != null && ConnectAPI.respuesta.get("warning") == ""){
             SettingsActivity.setLanguage(Locale.getDefault().getDisplayLanguage());
             SettingsActivity.setUsername(account.getDisplayName());
         } else {
-            logOut();
+            //logOut();
             Toast toast1 = Toast.makeText(this, "Ha habido un problema al iniciar sesión con la aplicación", Toast.LENGTH_LONG);
             toast1.setGravity(Gravity.CENTER, 0, 0);
             toast1.show();
@@ -70,16 +92,14 @@ public class MainActivity extends AppCompatActivity
         View headerView = navigationView.getHeaderView(0);
         TextView name = (TextView) headerView.findViewById(R.id.tvName);
         TextView email = (TextView) headerView.findViewById(R.id.tvEmail);
-        ImageView photo = (ImageView) headerView.findViewById(R.id.ivPhoto);
+        CircleImageView ph = (CircleImageView) headerView.findViewById(R.id.circle_image);
 
         name.setText(account.getDisplayName());
         email.setText(account.getEmail());
 
-
-
         Glide.with(this).load(account.getPhotoUrl().toString())
-                .override(150,150)
-                .into(photo);
+                .override(180,180)
+                .into(ph);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
