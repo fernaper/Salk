@@ -23,18 +23,29 @@ def set_language():
     return jsonify({"OK":True})
 
 
-@app.route('/create_user', methods=['PUT'])
+@app.route('/create_user', methods=['POST'])
 def create_user():
     user_name = request.form['user']
     language = request.form.get('language')
+    warning = ''
+    if model.exist_user(user_name):
+        return jsonify({"OK": True, "warning": warning})
+
     if language not in existing_languages:
         model.create_user(user_name)
         warning = 'Language requested is not available or misspelled'
     else:
         model.create_user(user_name, language)
-        warning = ''
 
-    return jsonify({"OK":True, "warning": warning})
+    return jsonify({"OK": True, "warning": warning})
+
+
+@app.route('/get_user', methods=['POST'])
+def get_user():
+    user_name = request.form['user']
+    language = model.get_language(user_name)
+    difficulty = model.get_difficulty(user_name)
+    return jsonify({"language":language, "difficulty":difficulty})
 
 
 @app.route('/set_difficulty', methods=['PUT'])

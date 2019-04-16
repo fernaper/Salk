@@ -74,6 +74,30 @@ def get_language(user_name):
     res = es.search(index="users",doc_type='_doc', body=query)
     return res['hits']['hits'][0]['_source']['language']
 
+def get_difficulty(user_name):
+    query = {
+        "query": {
+            "match": {
+                "name": user_name
+            }
+        }
+    }
+    
+    res = es.search(index="users",doc_type='_doc', body=query)
+    return res['hits']['hits'][0]['_source']['difficulty']
+
+
+def exist_user(user_name):
+    query = {
+        "query": {
+            "match": {
+                "name": user_name
+            }
+        }
+    }
+
+    res = es.search(index="users",doc_type='_doc', body=query)
+    return res['hits']['hits'] != []
 
 def insert_language(word_dict, lang):
 
@@ -137,7 +161,7 @@ def set_difficulty(user_name, difficulty):
 
 
 def get_score(user_name):
-     query = {
+    query = {
         "query": {
             "match": {
                 "name": user_name
