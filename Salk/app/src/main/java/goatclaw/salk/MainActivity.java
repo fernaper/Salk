@@ -52,6 +52,14 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_main);
 
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("165092933075-l627e9d3elufvocrrd84v559dv1ctmlr.apps.googleusercontent.com")
+                .requestEmail()
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+
         //Cogemos la info de google
         account = getIntent().getParcelableExtra(LoginActivity.GOOGLE_ACCOUNT);
 
@@ -76,19 +84,24 @@ public class MainActivity extends AppCompatActivity
 
         //Mando el user a la api de barral
         ConnectAPI.sendUserName(account.getGivenName().toLowerCase(), language, this);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 
-        //TODO: EN CUANTO FUNCIONE LA LLAMADA A LA API DE BARRAL HAY QUE DESCOMENTAR EL LOGOUT DEL ELSE
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         if(ConnectAPI.respuesta != null && ConnectAPI.respuesta.get("warning") == ""){
             SettingsActivity.setLanguage(Locale.getDefault().getDisplayLanguage());
             SettingsActivity.setUsername(account.getDisplayName());
         } else {
-            //logOut();
+            logOut();
             Toast toast1 = Toast.makeText(this, "Ha habido un problema al iniciar sesión con la aplicación", Toast.LENGTH_LONG);
             toast1.setGravity(Gravity.CENTER, 0, 0);
             toast1.show();
         }
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         View headerView = navigationView.getHeaderView(0);
         TextView name = (TextView) headerView.findViewById(R.id.tvName);
         TextView email = (TextView) headerView.findViewById(R.id.tvEmail);
@@ -201,12 +214,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onStart() {
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("165092933075-l627e9d3elufvocrrd84v559dv1ctmlr.apps.googleusercontent.com")
-                .requestEmail()
-                .build();
-
-        googleSignInClient = GoogleSignIn.getClient(this, gso);
         super.onStart();
     }
 }

@@ -17,6 +17,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -86,10 +87,7 @@ public class ConnectAPI extends AsyncTask<String, Boolean, Boolean> {
         RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
 
         if (language != null && !language.equals("") && username != null && !username.equals("")) {
-            String uri = String
-                    .format(URL_DATABASE + "create_user?user=%s&language=%s", username, language);
-
-            StringRequest myReq = new StringRequest(Request.Method.GET, uri, new Response.Listener<String>() {
+            StringRequest myReq = new StringRequest(Request.Method.POST, URL_DATABASE + "create_user", new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
                     ObjectMapper mapper = new ObjectMapper();
@@ -103,9 +101,18 @@ public class ConnectAPI extends AsyncTask<String, Boolean, Boolean> {
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
+                    respuesta.put("warning", "Error en la conexión");
                     Log.i("PETITION_DB",  error.toString());
                 }
-            });
+            }) {
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    params.put("user", username);
+                    params.put("language", language);
+                    return params;
+                }
+            };
             queueDatabase.add(myReq);
         }
     }
