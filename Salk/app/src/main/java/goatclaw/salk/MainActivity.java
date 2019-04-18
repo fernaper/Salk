@@ -1,6 +1,7 @@
 package goatclaw.salk;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.audiofx.Equalizer;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -23,8 +24,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -33,9 +43,17 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import lecho.lib.hellocharts.model.PieChartData;
+import lecho.lib.hellocharts.model.SliceValue;
+import lecho.lib.hellocharts.view.PieChartView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -44,6 +62,7 @@ public class MainActivity extends AppCompatActivity
     public static String language;
     public static int level = 0; //nivel del usuario: 0-fácil, 1-medio, 2-difícil
     public static GoogleSignInAccount account;
+    private final String idToken = "165092933075-l627e9d3elufvocrrd84v559dv1ctmlr.apps.googleusercontent.com";
     private GoogleSignInClient googleSignInClient;
 
 
@@ -54,7 +73,7 @@ public class MainActivity extends AppCompatActivity
 
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("165092933075-l627e9d3elufvocrrd84v559dv1ctmlr.apps.googleusercontent.com")
+                .requestIdToken(idToken)
                 .requestEmail()
                 .build();
 
@@ -82,26 +101,13 @@ public class MainActivity extends AppCompatActivity
                 language = "spanish";
         }
 
-        //Mando el user a la api de barral
-        ConnectAPI.sendUserName(account.getGivenName().toLowerCase(), language, this);
+        //Mando el user a la api de , si hay algun problema hago logout
+        sendUserName(account.getGivenName().toLowerCase(), language);
+
+        //getLevel(account.getGivenName().toLowerCase());
+
+        //Seteo los campos de la interfaz con los datos del usuario de google
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        if(ConnectAPI.respuesta != null && ConnectAPI.respuesta.get("warning") == ""){
-            SettingsActivity.setLanguage(Locale.getDefault().getDisplayLanguage());
-            SettingsActivity.setUsername(account.getDisplayName());
-        } else {
-            logOut();
-            Toast toast1 = Toast.makeText(this, "Ha habido un problema al iniciar sesión con la aplicación", Toast.LENGTH_LONG);
-            toast1.setGravity(Gravity.CENTER, 0, 0);
-            toast1.show();
-        }
-
         View headerView = navigationView.getHeaderView(0);
         TextView name = (TextView) headerView.findViewById(R.id.tvName);
         TextView email = (TextView) headerView.findViewById(R.id.tvEmail);
@@ -117,6 +123,18 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //Mostramos el cuadrante del usuario
+        PieChartView pieChartView = (PieChartView) findViewById(R.id.chart);
+        List<SliceValue> pieData = new ArrayList<>();
+        pieData.add(new SliceValue(40, Color.BLUE).setLabel("Facil"));
+        pieData.add(new SliceValue(40, Color.GRAY).setLabel("Medio"));
+        pieData.add(new SliceValue(20, Color.MAGENTA).setLabel("Dificil"));
+        PieChartData pieChartData = new PieChartData(pieData);
+        pieChartData.setHasLabels(true);
+        pieChartData.setHasCenterCircle(true).setCenterText1("Resumen del usuario").setCenterText1FontSize(15)
+                    .setCenterText1Color(Color.parseColor("#0097A7"));
+        pieChartView.setPieChartData(pieChartData);
+
         //TODO: obtener datos de los usuarios con una llamada a la API
 
         Button btnScan = (Button) findViewById(R.id.btnContinue);
@@ -128,7 +146,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -136,6 +153,102 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void sendUserName(final String username, final String language){
+        RequestQueue queueDatabase = Volley.newRequestQueue(this);
+
+        if (language != null && !language.equals("") && username != null && !username.equals("")) {
+            StringRequest myReq = new StringRequest(Request.Method.POST, "http://92.176.178.247:5754/create_user", new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    try {
+                        HashMap<String, String> respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
+                        if(respuesta.get("warning") == "") {
+                            SettingsActivity.setLanguage(Locale.getDefault().getDisplayLanguage());
+                            SettingsActivity.setUsername(account.getDisplayName());
+                        }
+                        else
+                            errorLogin();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Log.i("PETITION_DB",  response.toString());
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("PETITION_DB",  error.toString());
+                    errorLogin();
+                }
+            }) {
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    params.put("user", username);
+                    params.put("language", language);
+                    return params;
+                }
+            };
+            queueDatabase.add(myReq);
+        }
+    }
+
+    private void getLevel(final String username){
+        RequestQueue queueDatabase = Volley.newRequestQueue(this);
+
+        if (language != null && !language.equals("") && username != null && !username.equals("")) {
+            StringRequest myReq = new StringRequest(Request.Method.POST, "http://92.176.178.247:5754/get_user", new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    try {
+                        HashMap<String, String> respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
+                        if(respuesta.get("warning") == "") {
+                            SettingsActivity.setLanguage(respuesta.get("language"));
+                            level = Integer.parseInt(respuesta.get("difficulty"));
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Log.i("PETITION_DB",  response.toString());
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("PETITION_DB",  error.toString());
+                }
+            }) {
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    params.put("user", username);
+                    return params;
+                }
+            };
+            queueDatabase.add(myReq);
+        }
+    }
+
+    private void errorLogin(){
+        logOut();
+        Toast toast1 = Toast.makeText(this, "Ha habido un problema al iniciar sesión con la aplicación", Toast.LENGTH_LONG);
+        toast1.setGravity(Gravity.CENTER, 0, 0);
+        toast1.show();
+    }
+
+    private void logOut(){
+        googleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                //On Succesfull signout we navigate the user back to LoginActivity
+                Intent intent=new Intent(MainActivity.this,LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     @Override
@@ -197,19 +310,6 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-    private void logOut(){
-        googleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                //On Succesfull signout we navigate the user back to LoginActivity
-                Intent intent=new Intent(MainActivity.this,LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
-            }
-        });
     }
 
     @Override

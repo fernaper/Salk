@@ -83,40 +83,6 @@ public class ConnectAPI extends AsyncTask<String, Boolean, Boolean> {
         queue.add(stringRequest);
     }
 
-    public static void sendUserName(final String username, final String language, final Context ctx){
-        RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
-
-        if (language != null && !language.equals("") && username != null && !username.equals("")) {
-            StringRequest myReq = new StringRequest(Request.Method.POST, URL_DATABASE + "create_user", new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    ObjectMapper mapper = new ObjectMapper();
-                    try {
-                        respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    Log.i("PETITION_DB",  response.toString());
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    respuesta.put("warning", "Error en la conexión");
-                    Log.i("PETITION_DB",  error.toString());
-                }
-            }) {
-                @Override
-                protected Map<String, String> getParams() throws AuthFailureError {
-                    HashMap<String, String> params = new HashMap<String, String>();
-                    params.put("user", username);
-                    params.put("language", language);
-                    return params;
-                }
-            };
-            queueDatabase.add(myReq);
-        }
-    }
-
     public HashMap<String, String> getRespuesta(){ return respuesta; }
 
     @Override
