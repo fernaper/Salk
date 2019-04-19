@@ -69,21 +69,23 @@ public class TranslateActivity extends AppCompatActivity
         btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                tlTable.removeAllViews();
 
-                String palabra = etInput.getText().toString().split(" ")[0];
-                palabra += " ";
+                String palabra = etInput.getText().toString().split(" ")[0].toLowerCase();
+                //palabra += " ";
                 Log.i("HEY", palabra);
-                for (int i = 0; i < palabra.length(); i++){
+               while(palabra.length() > 0){
                     TableRow tr = new TableRow(ctx);
-                    tr.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.FILL_PARENT,
-                            TableLayout.LayoutParams.FILL_PARENT));
+                    tr.setLayoutParams(new TableRow.LayoutParams(100, 100));
 
-                    for (int j = 0; j <  palabra.length(); j++) {
+                    for (int j = 0; j <  5; j++) {
 
-                        Log.i("HEY", palabra.substring(0, 1));
+                        if(palabra.length() == 0)
+                            break;
                         ImageView view = new ImageView(ctx);
                         int id = getResources().getIdentifier("goatclaw.salk:drawable/" + palabra.substring(0, 1), null, null);
                         view.setImageResource(id);
+                        view.setLayoutParams(new TableRow.LayoutParams(200, 200));
                         palabra = palabra.substring(1);
                         tr.addView(view);
                     }
