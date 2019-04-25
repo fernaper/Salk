@@ -36,6 +36,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class TranslateActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -58,6 +63,22 @@ public class TranslateActivity extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        View headerView = navigationView.getHeaderView(0);
+        TextView name = (TextView) headerView.findViewById(R.id.tvName);
+        TextView email = (TextView) headerView.findViewById(R.id.tvEmail);
+        CircleImageView ph = (CircleImageView) headerView.findViewById(R.id.circle_image);
+
+        name.setText(SettingsActivity.getUsername());
+        email.setText(SettingsActivity.getEmail());
+
+        /*int id = getResources().getIdentifier(SettingsActivity.getUserImage(), null, null);
+        ph.setImageResource(id);*/
+
+        Glide.with(this).load(SettingsActivity.getUserImage())
+                .override(180,180)
+                .into(ph);
+
+
         navigationView.setNavigationItemSelectedListener(this);
 
 
@@ -92,21 +113,6 @@ public class TranslateActivity extends AppCompatActivity
                     tlTable.addView(tr);
 
                 }
-                /*
-                for (int i = 0; i < 5; i++) {
-
-                    TableRow tr = new TableRow(ctx);
-                    tr.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.FILL_PARENT,
-                            TableLayout.LayoutParams.WRAP_CONTENT));
-
-                    for (int j = 0; j < 5; j++) {
-
-                        ImageView view = new ImageView(ctx);
-                        int id = getResources().getIdentifier("goatclaw.salk:drawable/" + "a", null, null);
-                        view.setImageResource(id);
-                        tr.addView(view);
-                    }
-                }*/
             }
         });
 

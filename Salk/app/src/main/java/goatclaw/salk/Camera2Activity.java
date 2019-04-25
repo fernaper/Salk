@@ -68,6 +68,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class Camera2Activity extends AppCompatActivity {
     private Size previewsize;
@@ -83,7 +84,6 @@ public class Camera2Activity extends AppCompatActivity {
 
     private String palabra;
     private int position;
-    private int difficulty = 7;
     private byte[] imageBytes;
 
 
@@ -146,7 +146,12 @@ public class Camera2Activity extends AppCompatActivity {
                 if(position == -1) { //primera iteración
                     etPalabraCorreta.setText("");
 
-                    //TODO: establecer la dificultad como un número aleatorio acorde con el nivel de usuario
+                    int diff = new Random().nextInt(7);
+                    diff += SettingsActivity.getLevel()*7;
+
+                    final int difficulty = diff;
+
+                    //TODO ver que pasa si se devuele una frase
 
                     RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
                     StringRequest databaseRequest = new StringRequest(Request.Method.POST, URL_DATABASE+"get_word", new Response.Listener<String>() {
