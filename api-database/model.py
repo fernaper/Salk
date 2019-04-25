@@ -46,8 +46,8 @@ def get_word_with_difficulty(language, difficulty, exclude_words=[]):
      }
 
     res = es.search(index="words",doc_type='_doc', body=query)
-    return res['hits']['hits'][0]['_source']['word'] 
-    
+    return res['hits']['hits'][0]['_source']['word']
+
 
 
 def get_phrase_with_difficulty(language, difficulty, word_number):
@@ -82,7 +82,7 @@ def get_difficulty(user_name):
             }
         }
     }
-    
+
     res = es.search(index="users",doc_type='_doc', body=query)
     return res['hits']['hits'][0]['_source']['difficulty']
 
@@ -101,7 +101,7 @@ def exist_user(user_name):
 
 def insert_language(word_dict, lang):
 
-    actions = [ 
+    actions = [
         {
             "_index": "words",
             "_type": "_doc",
@@ -170,6 +170,9 @@ def get_score(user_name):
     }
 
     res = es.search(index="users",doc_type='_doc', body=query)
-    score = res['hits']['hits'][0]['_source']['score']
-    total_words = res['hits']['hits'][0]['_source']['total_words']
-    
+    hit = res['hits']['hits'][0]['_source']
+    easy_level_words = hit['easy_level_words']
+    medium_level_words = hit['medium_level_words']
+    hard_level_words = hit['hard_level_words']
+    total_words = easy_level_words + medium_level_words + hard_level_words
+    return easy_level_words, medium_level_words, hard_level_words, total_words
