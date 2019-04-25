@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import model
 import logging
+import random
 
 app = Flask(__name__)
 
@@ -73,8 +74,14 @@ def get_phrase_with_difficulty():
     user_name = request.form['user']
     difficulty = request.form['difficulty']
     language = model.get_language(user_name)
-    phrase = model.get_phrase_with_difficulty(language, difficulty, request.form['word_number'])
-    return jsonify({"word":phrase})
+
+    if(difficulty == 1):
+        phrase_length = random.randint(2,3)
+    else:
+        phrase_length = random.randint(5,7)
+
+    phrase = model.get_word_with_difficulty(language, difficulty, phrase_length)
+    return jsonify({"word": phrase})
 
 
 @app.route('/get_score', methods=['POST'])

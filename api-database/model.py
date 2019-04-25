@@ -13,7 +13,7 @@ def connection():
     return res
 
 
-def get_word_with_difficulty(language, difficulty, exclude_words=[]):
+def get_word_with_difficulty(language, difficulty, word_number=10):
     query = {
     "query": {
         "function_score" : {
@@ -30,27 +30,27 @@ def get_word_with_difficulty(language, difficulty, exclude_words=[]):
                     "lang": language
                   }
                 }
-              ],
-              "must_not": [
-                {
-                    "term" : {"word": exclude_words}
-                }
-              ]
+              ]      
             }
           },
           "random_score" : {}
         }
       },
-     "size":1
+     "size": word_number
 
      }
 
     res = es.search(index="words",doc_type='_doc', body=query)
-    return res['hits']['hits'][0]['_source']['word']
+
+    word_list = ''
+    for word in res['hits']['hits']:
+        word_list += word['_source']['word']
+
+    return word_list
 
 
 
-def get_phrase_with_difficulty(language, difficulty, word_number):
+'''def get_phrase_with_difficulty(language, difficulty, word_number):
     word_list = ''
     no_word = []
     for i in range(0,word_number):
@@ -59,7 +59,7 @@ def get_phrase_with_difficulty(language, difficulty, word_number):
         word_list += word
 
     return word_list
-
+'''
 
 
 def get_language(user_name):
@@ -121,6 +121,9 @@ def create_user(user_name, language='spanish'):
         "name" : user_name,
         "language" : language,
         "difficulty" : 1,
+        "easy_level_words": 0,
+        "medium_level_words": 0,
+        "hard_level_words": 0,
     }
 
     res = es.index(index="users",doc_type='_doc', body=query)
@@ -159,6 +162,24 @@ def set_difficulty(user_name, difficulty):
     res = es.update_by_query(index="users",doc_type='_doc', body=query)
     return
 
+
+def insert_successful_user(user_name, word):
+    query = {
+        "script": {
+            "inline": "ctx._source.successful_users.add(params.name)",
+            "params":{
+                "name": user_name
+            }
+        },
+        "query": {
+            "match": {
+                "word": word
+            }
+        }
+    }
+
+    res = es.update_by_query(index="users", doc_type='_doc', body=query)
+    return
 
 def get_score(user_name):
     query = {
