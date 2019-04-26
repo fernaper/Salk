@@ -22,7 +22,21 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -338,6 +352,66 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     public void onBackPressed() {
         //TODO llamar al update de la api de Barral con dificultad y lenguaje
+        // Dan errores raros
+        //setUserLanguage(getUsername(), getLanguage());
+        //setUserDifficulty(getUsername(), String.valueOf(getLevel()));
+        super.onBackPressed();
+    }
+
+    private void setUserLanguage(final String username, final String language){
+        RequestQueue queueDatabase = Volley.newRequestQueue(this);
+
+        if (language != null && !language.equals("") && username != null && !username.equals("")) {
+            StringRequest myReq = new StringRequest(Request.Method.PUT, "http://92.176.178.247:5754/set_language", new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    Log.i("PETITION_DB",  response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("PETITION_DB",  error.toString());
+                }
+            }) {
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    params.put("user", username);
+                    params.put("language", language);
+                    return params;
+                }
+            };
+            queueDatabase.add(myReq);
+        }
+    }
+
+    private void setUserDifficulty(final String username, final String difficulty){
+        RequestQueue queueDatabase = Volley.newRequestQueue(this);
+
+        if (difficulty != null && !difficulty.equals("") && username != null && !username.equals("")) {
+            StringRequest myReq = new StringRequest(Request.Method.PUT, "http://92.176.178.247:5754/set_difficulty", new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    Log.i("PETITION_DB",  response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("PETITION_DB",  error.toString());
+                }
+            }) {
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    params.put("user", username);
+                    params.put("difficulty", difficulty);
+                    return params;
+                }
+            };
+            queueDatabase.add(myReq);
+        }
     }
 
 }

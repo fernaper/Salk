@@ -59,8 +59,6 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     //atributos estáticos para la configuración de cada usuario
-    public static String language;
-    public static int level = 0; //nivel del usuario: 0-fácil, 1-medio, 2-difícil
     public static GoogleSignInAccount account;
     private final String idToken = "165092933075-l627e9d3elufvocrrd84v559dv1ctmlr.apps.googleusercontent.com";
     private GoogleSignInClient googleSignInClient;
@@ -83,6 +81,7 @@ public class MainActivity extends AppCompatActivity
         account = getIntent().getParcelableExtra(LoginActivity.GOOGLE_ACCOUNT);
 
         String lang = Locale.getDefault().getLanguage();
+        String language;
 
         switch(lang){
             case "es":
@@ -101,11 +100,11 @@ public class MainActivity extends AppCompatActivity
                 language = "spanish";
         }
 
-
+        String username = account.getGivenName().toLowerCase();
         //Mando el user a la api de Barral , si hay algun problema hago logout
-        sendUserName(account.getGivenName().toLowerCase(), language);
-
-        //getLevel(account.getGivenName().toLowerCase());
+        sendUserName(username, language);
+        getLevel(username);
+        getUserStats(username);
 
         //Seteo los campos de la interfaz con los datos del usuario de google
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -122,13 +121,13 @@ public class MainActivity extends AppCompatActivity
         int id = getResources().getIdentifier(SettingsActivity.getUserImage(), null, null);
         ph.setImageResource(id);*/
 
-        SettingsActivity.setUsername(account.getDisplayName());
+        SettingsActivity.setUsername(username);
         SettingsActivity.setEmail(account.getEmail());
         SettingsActivity.setLanguage(language);
         SettingsActivity.setUserImage(account.getPhotoUrl().toString());
 
         name.setText(SettingsActivity.getUsername());
-        email.setText(SettingsActivity.getLanguage());
+        email.setText(SettingsActivity.getEmail());
 
         Glide.with(this).load(SettingsActivity.getUserImage())
                 .override(180,180)
@@ -136,18 +135,6 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        //Mostramos el cuadrante del usuario
-        PieChartView pieChartView = (PieChartView) findViewById(R.id.chart);
-        List<SliceValue> pieData = new ArrayList<>();
-        pieData.add(new SliceValue(40, Color.BLUE).setLabel("Facil"));
-        pieData.add(new SliceValue(40, Color.GRAY).setLabel("Medio"));
-        pieData.add(new SliceValue(20, Color.MAGENTA).setLabel("Dificil"));
-        PieChartData pieChartData = new PieChartData(pieData);
-        pieChartData.setHasLabels(true);
-        pieChartData.setHasCenterCircle(true).setCenterText1("Resumen del usuario").setCenterText1FontSize(15)
-                    .setCenterText1Color(Color.parseColor("#0097A7"));
-        pieChartView.setPieChartData(pieChartData);
 
         //Inicializo los listener
         Button btnScan = (Button) findViewById(R.id.btnContinue);
@@ -209,6 +196,40 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void getUserStats(final String username){
+        RequestQueue queueDatabase = Volley.newRequestQueue(this);
+
+        if (username != null && !username.equals("")) {
+            StringRequest myReq = new StringRequest(Request.Method.POST, "http://92.176.178.247:5754/get_score", new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    try {
+                        HashMap<String, String> respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
+                        actualizarPieChart(respuesta);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Log.i("PETITION_DB",  response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("PETITION_DB",  error.toString());
+                }
+            }) {
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    params.put("user", username);
+                    return params;
+                }
+            };
+            queueDatabase.add(myReq);
+        }
+    }
+
     private void getLevel(final String username){
         RequestQueue queueDatabase = Volley.newRequestQueue(this);
 
@@ -220,7 +241,7 @@ public class MainActivity extends AppCompatActivity
                     try {
                         HashMap<String, String> respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
                         SettingsActivity.setLanguage(respuesta.get("language"));
-                        level = Integer.parseInt(respuesta.get("difficulty"));
+                        SettingsActivity.setLevel(Integer.parseInt(respuesta.get("difficulty")));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -241,6 +262,26 @@ public class MainActivity extends AppCompatActivity
             };
             queueDatabase.add(myReq);
         }
+    }
+
+    private void actualizarPieChart(HashMap<String, String> data){
+
+        float total = Float.parseFloat(data.get("total"));
+        float easy_percentage = (Float.parseFloat(data.get("easy")) * 100) / total;
+        float medium_percentage = (Float.parseFloat(data.get("medium")) * 100) / total;
+        float hard_percentage = (Float.parseFloat(data.get("hard")) * 100) / total;
+
+        //Mostramos el cuadrante del usuario
+        PieChartView pieChartView = (PieChartView) findViewById(R.id.chart);
+        List<SliceValue> pieData = new ArrayList<>();
+        pieData.add(new SliceValue(easy_percentage, Color.BLUE).setLabel("Facil"));
+        pieData.add(new SliceValue(medium_percentage, Color.GRAY).setLabel("Medio"));
+        pieData.add(new SliceValue(hard_percentage, Color.MAGENTA).setLabel("Dificil"));
+        PieChartData pieChartData = new PieChartData(pieData);
+        pieChartData.setHasLabels(true);
+        pieChartData.setHasCenterCircle(true).setCenterText1("Resumen del usuario").setCenterText1FontSize(15)
+                .setCenterText1Color(Color.parseColor("#0097A7"));
+        pieChartView.setPieChartData(pieChartData);
     }
 
     private void errorLogin(){
