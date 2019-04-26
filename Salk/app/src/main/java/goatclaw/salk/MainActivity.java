@@ -101,8 +101,10 @@ public class MainActivity extends AppCompatActivity
                 language = "spanish";
         }
 
+
         //Mando el user a la api de Barral , si hay algun problema hago logout
         sendUserName(account.getGivenName().toLowerCase(), language);
+
         //getLevel(account.getGivenName().toLowerCase());
 
         //Seteo los campos de la interfaz con los datos del usuario de google
@@ -112,10 +114,23 @@ public class MainActivity extends AppCompatActivity
         TextView email = (TextView) headerView.findViewById(R.id.tvEmail);
         CircleImageView ph = (CircleImageView) headerView.findViewById(R.id.circle_image);
 
-        name.setText(account.getDisplayName());
-        email.setText(account.getEmail());
+        /* Solo para Enroque
+        SettingsActivity.setUsername("Enroque");
+        SettingsActivity.setEmail("prueba@enroque.io");
+        SettingsActivity.setLanguage(language);
+        SettingsActivity.setUserImage("goatclaw.salk:drawable/cabra");
+        int id = getResources().getIdentifier(SettingsActivity.getUserImage(), null, null);
+        ph.setImageResource(id);*/
 
-        Glide.with(this).load(account.getPhotoUrl().toString())
+        SettingsActivity.setUsername(account.getDisplayName());
+        SettingsActivity.setEmail(account.getEmail());
+        SettingsActivity.setLanguage(language);
+        SettingsActivity.setUserImage(account.getPhotoUrl().toString());
+
+        name.setText(SettingsActivity.getUsername());
+        email.setText(SettingsActivity.getLanguage());
+
+        Glide.with(this).load(SettingsActivity.getUserImage())
                 .override(180,180)
                 .into(ph);
 
@@ -173,7 +188,7 @@ public class MainActivity extends AppCompatActivity
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    Log.i("PETITION_DB",  response.toString());
+                    Log.i("PETITION_DB",  response);
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -291,6 +306,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_profile) {
             // Handle the camera action
         } else if (id == R.id.nav_levels) {
+            Log.i("Settings", SettingsActivity.getLanguage() + " " + SettingsActivity.getLevel());
 
         } else if (id == R.id.nav_translate) {
 
