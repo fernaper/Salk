@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_main);
 
-
+        //Inicializamos la conexión con Google
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(idToken)
                 .requestEmail()
@@ -101,9 +101,8 @@ public class MainActivity extends AppCompatActivity
                 language = "spanish";
         }
 
-        //Mando el user a la api de , si hay algun problema hago logout
+        //Mando el user a la api de Barral , si hay algun problema hago logout
         sendUserName(account.getGivenName().toLowerCase(), language);
-
         //getLevel(account.getGivenName().toLowerCase());
 
         //Seteo los campos de la interfaz con los datos del usuario de google
@@ -135,8 +134,7 @@ public class MainActivity extends AppCompatActivity
                     .setCenterText1Color(Color.parseColor("#0097A7"));
         pieChartView.setPieChartData(pieChartData);
 
-        //TODO: obtener datos de los usuarios con una llamada a la API
-
+        //Inicializo los listener
         Button btnScan = (Button) findViewById(R.id.btnContinue);
         btnScan.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -146,6 +144,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        //Configuramos el drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -198,21 +197,19 @@ public class MainActivity extends AppCompatActivity
     private void getLevel(final String username){
         RequestQueue queueDatabase = Volley.newRequestQueue(this);
 
-        if (language != null && !language.equals("") && username != null && !username.equals("")) {
+        if (username != null && !username.equals("")) {
             StringRequest myReq = new StringRequest(Request.Method.POST, "http://92.176.178.247:5754/get_user", new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
                     ObjectMapper mapper = new ObjectMapper();
                     try {
                         HashMap<String, String> respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
-                        if(respuesta.get("warning") == "") {
-                            SettingsActivity.setLanguage(respuesta.get("language"));
-                            level = Integer.parseInt(respuesta.get("difficulty"));
-                        }
+                        SettingsActivity.setLanguage(respuesta.get("language"));
+                        level = Integer.parseInt(respuesta.get("difficulty"));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    Log.i("PETITION_DB",  response.toString());
+                    Log.i("PETITION_DB",  response);
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -221,7 +218,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }) {
                 @Override
-                protected Map<String, String> getParams() throws AuthFailureError {
+                protected Map<String, String> getParams() {
                     HashMap<String, String> params = new HashMap<String, String>();
                     params.put("user", username);
                     return params;
@@ -242,11 +239,11 @@ public class MainActivity extends AppCompatActivity
         googleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                //On Succesfull signout we navigate the user back to LoginActivity
-                Intent intent=new Intent(MainActivity.this,LoginActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
+            //On Succesfull signout we navigate the user back to LoginActivity
+            Intent intent=new Intent(MainActivity.this,LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
             }
         });
     }

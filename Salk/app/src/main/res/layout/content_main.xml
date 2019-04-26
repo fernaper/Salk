@@ -36,17 +36,9 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/btnSelectLevel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:backgroundTint="@color/colorAccent"
-                android:text="Seleccionar nivel" />
-
-            <Button
                 android:id="@+id/btnContinue"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="34dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginLeft="8dp"
                 android:layout_marginEnd="8dp"
