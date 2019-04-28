@@ -1,5 +1,8 @@
 config.py
 last_image.png
+api-neural-network/utils/dataset
+api-neural-network/utils/inception
+api-neural-network/utils/logs/*
 
 # Compiled class file
 *.class
