@@ -1,5 +1,6 @@
 from datetime import datetime
 import requests
+import re
 from elasticsearch import Elasticsearch, helpers
 es = Elasticsearch(
     ['localhost'],
@@ -13,7 +14,7 @@ def connection():
     return res
 
 
-def get_word_with_difficulty(language, difficulty, word_number=10):
+def get_word_with_difficulty(user_name, language, difficulty, word_number=10):
     query = {
     "query": {
         "function_score" : {
@@ -29,8 +30,19 @@ def get_word_with_difficulty(language, difficulty, word_number=10):
                   "match": {
                     "lang": language
                   }
+                },
+                {
+                    "bool": {
+                        "must_not":[
+                            {
+                            "match": {
+                                "successful_users": user_name
+                            }
+                        }
+                       ] 
+                    }
                 }
-              ]      
+            ]
             }
           },
           "random_score" : {}
@@ -40,13 +52,13 @@ def get_word_with_difficulty(language, difficulty, word_number=10):
 
      }
 
-    res = es.search(index="words",doc_type='_doc', body=query)
+    res = es.search(index="words,users",doc_type='_doc', body=query)
 
     word_list = ''
     for word in res['hits']['hits']:
-        word_list += word['_source']['word']
-
-    return word_list
+        if re.match("^[a-zA-Z0-9_]*$", word['_source']['word']):
+            word_list += word['_source']['word'] + ' '
+    return word_list[:-1]
 
 
 
@@ -178,8 +190,32 @@ def insert_successful_user(user_name, word):
         }
     }
 
+    res = es.update_by_query(index="words", doc_type='_doc', body=query)
+    return
+
+
+def upload_score(user_name, difficulty):
+    if difficulty == 0:
+        param = "easy_level_words++"
+    elif difficulty == 1:
+        param = "medium_level_words++"
+    else:
+        param = "hard_level_words++"
+
+    query = {
+        "script": {
+            "inline": "ctx._source.{}".format(param)
+        },
+        "query": {
+            "match": {
+                "name": user_name
+            }
+        }
+    }
+
     res = es.update_by_query(index="users", doc_type='_doc', body=query)
     return
+
 
 def get_score(user_name):
     query = {

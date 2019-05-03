@@ -65,7 +65,7 @@ def get_word():
     user_name = request.form['user']
     difficulty = request.form['difficulty']
     language = model.get_language(user_name)
-    word = model.get_word_with_difficulty(language, difficulty)
+    word = model.get_word_with_difficulty(user_name, language, difficulty)
     return jsonify({"word":word})
 
 
@@ -80,16 +80,25 @@ def get_phrase_with_difficulty():
     else:
         phrase_length = random.randint(5,7)
 
-    phrase = model.get_word_with_difficulty(language, difficulty, phrase_length)
+    phrase = model.get_word_with_difficulty(user_name, language, difficulty, phrase_length)
     return jsonify({"word": phrase})
 
 
 @app.route('/get_score', methods=['POST'])
 def get_score():
     user_name = request.form['user']
-    easy_level_words, medium_level_words, hard_level_words, total_words = get_score(user_name)
+    easy_level_words, medium_level_words, hard_level_words, total_words = model.get_score(user_name)
     return jsonify({"easy": easy_level_words, "medium": medium_level_words, "hard": hard_level_words, "total": total_words})
 
+
+@app.route('/record_success', methods=['PUT'])
+def record_success():
+    user_name = request.form['user']
+    word = request.form['word']
+    difficulty = request.form['difficulty']
+    insert_successful_user(user_name, word)
+    upload_score(user_name, difficulty)
+    return jsonify({"ok":True})
 
 if __name__ == "__main__":
     app.run(debug = True, host = "0.0.0.0", port = 5754)
