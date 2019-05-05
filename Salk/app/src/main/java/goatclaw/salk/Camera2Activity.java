@@ -189,7 +189,8 @@ public class Camera2Activity extends AppCompatActivity {
                         @Override
                         protected Map<String, String> getParams() throws AuthFailureError {
                             HashMap<String, String> params = new HashMap<String, String>();
-                            params.put("user", "enrique");
+                            params.put("user", SettingsActivity.getUsername());
+                            params.put("language", SettingsActivity.getLanguage());
                             params.put("difficulty", "" + difficulty);
                             return params;
                         }
