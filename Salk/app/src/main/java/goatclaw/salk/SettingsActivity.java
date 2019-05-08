@@ -353,8 +353,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public void onBackPressed() {
         //TODO llamar al update de la api de Barral con dificultad y lenguaje
         // Dan errores raros
-        //setUserLanguage(getUsername(), getLanguage());
-        //setUserDifficulty(getUsername(), String.valueOf(getLevel()));
+        //updateDatabase(getUsername(), getLanguage(), getLevel());
+        Log.i("YEEEEEEP", "onBackPressed: " + getUsername() +", "+getLanguage() +", " + getLevel());
+        setUserLanguage(getUsername(), getLanguage());
+        setUserDifficulty(getUsername(), getLevel());
         super.onBackPressed();
     }
 
@@ -386,10 +388,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    private void setUserDifficulty(final String username, final String difficulty){
+    private void setUserDifficulty(final String username, final int difficulty){
         RequestQueue queueDatabase = Volley.newRequestQueue(this);
 
-        if (difficulty != null && !difficulty.equals("") && username != null && !username.equals("")) {
+        if (username != null && !username.equals("")) {
             StringRequest myReq = new StringRequest(Request.Method.PUT, "http://92.176.178.247:5754/set_difficulty", new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
@@ -406,7 +408,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 protected Map<String, String> getParams() throws AuthFailureError {
                     HashMap<String, String> params = new HashMap<String, String>();
                     params.put("user", username);
-                    params.put("difficulty", difficulty);
+                    params.put("difficulty",""+difficulty);
                     return params;
                 }
             };
