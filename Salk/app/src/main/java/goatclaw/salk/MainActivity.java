@@ -63,12 +63,15 @@ public class MainActivity extends AppCompatActivity
     private final String idToken = "165092933075-l627e9d3elufvocrrd84v559dv1ctmlr.apps.googleusercontent.com";
     private GoogleSignInClient googleSignInClient;
 
+    private String userEnroque = "enroque";
+    private String emailEnroque = "enroque@salk.com";
+    private String photoEnroque = "goatclaw.salk:drawable/cabra";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_main);
-
+//* comentar para enroque
         //Inicializamos la conexión con Google
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(idToken)
@@ -100,7 +103,10 @@ public class MainActivity extends AppCompatActivity
                 language = "spanish";
         }
 
-        String username = account.getGivenName().toLowerCase();
+        String username = account.getGivenName().toLowerCase(); //comentar para enroque
+
+        //String username = userEnroque; descomentar para enroque
+
         //Mando el user a la api de Barral , si hay algun problema hago logout
         sendUserName(username, language);
         getLevel(username);
@@ -113,25 +119,19 @@ public class MainActivity extends AppCompatActivity
         TextView email = (TextView) headerView.findViewById(R.id.tvEmail);
         CircleImageView ph = (CircleImageView) headerView.findViewById(R.id.circle_image);
 
-        /* Solo para Enroque
-        SettingsActivity.setUsername("Enroque");
-        SettingsActivity.setEmail("prueba@enroque.io");
-        SettingsActivity.setLanguage(language);
-        SettingsActivity.setUserImage("goatclaw.salk:drawable/cabra");
+        /* Solo para Enroque COMENTAR
+        SettingsActivity.setUserImage(photoEnroque);
         int id = getResources().getIdentifier(SettingsActivity.getUserImage(), null, null);
-        ph.setImageResource(id);*/
-
-        SettingsActivity.setUsername(username);
-        SettingsActivity.setEmail(account.getEmail());
-        SettingsActivity.setLanguage(language);
-        SettingsActivity.setUserImage(account.getPhotoUrl().toString());
+        ph.setImageResource(id); //*/
 
         name.setText(SettingsActivity.getUsername());
         email.setText(SettingsActivity.getEmail());
 
+        //* comentar para enroque
         Glide.with(this).load(SettingsActivity.getUserImage())
                 .override(180,180)
                 .into(ph);
+ //*/
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -168,7 +168,15 @@ public class MainActivity extends AppCompatActivity
                         HashMap<String, String> respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
                         if(respuesta.get("warning") == "") {
                             SettingsActivity.setLanguage(Locale.getDefault().getDisplayLanguage());
+                            //* comentar para enroque
                             SettingsActivity.setUsername(account.getDisplayName());
+                            SettingsActivity.setEmail(account.getEmail());
+                            SettingsActivity.setUserImage(account.getPhotoUrl().toString());
+                             //*/
+                            /* descomentar para enroque
+                            SettingsActivity.setUsername(userEnroque);
+                            SettingsActivity.setEmail(emailEnroque);
+                            SettingsActivity.setUserImage(photoEnroque);//*/
                         }
                         else
                             errorLogin();
