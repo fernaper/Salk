@@ -37,8 +37,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TableRow;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -46,14 +46,10 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -68,7 +64,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 public class Camera2Activity extends AppCompatActivity {
     private Size previewsize;
@@ -82,7 +77,8 @@ public class Camera2Activity extends AppCompatActivity {
     private EditText etPalabraCorreta;
     private ImageView pictogram;
 
-    private String palabra;
+    private String[] words;
+    private String word;
     private int position;
     private byte[] imageBytes;
 
@@ -111,7 +107,6 @@ public class Camera2Activity extends AppCompatActivity {
         ctx = getApplicationContext();
         position = -1;
 
-        palabra = "";
         //Todo: Llamada a la API de barral
 
         Display display = getWindowManager(). getDefaultDisplay();
@@ -140,72 +135,101 @@ public class Camera2Activity extends AppCompatActivity {
 
         textureView.setLayoutParams(layoutParams);
 
+        int diff = new Random().nextInt(4);
+        diff += SettingsActivity.getLevel()*6;
+
+        diff = diff == 0?1:diff;
+
         btnAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(position == -1) { //primera iteración
                     etPalabraCorreta.setText("");
 
-                    int diff = new Random().nextInt(7);
-                    diff += SettingsActivity.getLevel()*7;
+                    int diff = new Random().nextInt(4);
+                    diff += SettingsActivity.getLevel()*6;
 
                     final int difficulty = diff;
 
+
+                    if(SettingsActivity.getLevel() == 2) { //hard level
+                    //Se quiere coger una frase en vez de palabras
                     //TODO ver que pasa si se devuele una frase
 
-                    RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
-                    StringRequest databaseRequest = new StringRequest(Request.Method.POST, URL_DATABASE+"get_word", new Response.Listener<String>() {
-                        @SuppressLint("SetTextI18n")
-                                @Override
-                                public void onResponse(String response) {
+                    }
+
+                    if(words == null) {
+
+                        RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
+                        StringRequest databaseRequest = new StringRequest(Request.Method.POST, URL_DATABASE + "get_word", new Response.Listener<String>() {
+                            @SuppressLint("SetTextI18n")
+                            @Override
+                            public void onResponse(String response) {
 
 
-                                    Log.i("PETITION_DB",  response);
+                                Log.i("PETITION_DB", response);
 
-                                    ObjectMapper mapper = new ObjectMapper();
-                                    try {
-                                        responseDB = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-
-
-                                    palabra = responseDB.get("word");
-                                    Log.i("PETITION_DB",  palabra);
-                                    btnAction.setText("Check");
-                                    position++;
-                                    etPalabraRestante.setText(palabra);
-                                    int id = getResources().getIdentifier("goatclaw.salk:drawable/" + palabra.substring(0,1), null, null);
-                                    pictogram.setImageResource(id);
-
-
+                                ObjectMapper mapper = new ObjectMapper();
+                                try {
+                                    responseDB = mapper.readValue(response, new TypeReference<Map<String, String>>() {
+                                    });
+                                } catch (IOException e) {
+                                    e.printStackTrace();
                                 }
-                            }, new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.i("PETITION_DB",  error.toString());
-                        }
-                    }) {
-                        @Override
-                        protected Map<String, String> getParams() throws AuthFailureError {
-                            HashMap<String, String> params = new HashMap<String, String>();
-                            params.put("user", SettingsActivity.getUsername());
-                            params.put("language", SettingsActivity.getLanguage());
-                            params.put("difficulty", "" + difficulty);
-                            return params;
-                        }
-                    };
-                    queueDatabase.add(databaseRequest);
 
+
+                                words = responseDB.get("word").split(" ");
+                                for (int i = 0; i < words.length; i++)
+                                    Log.i("PETITION_DB", words[i]);
+                                word = words[0];
+                                words = removeIndex(words, 0);
+                                btnAction.setText("Check");
+                                position++;
+                                etPalabraRestante.setText(word);
+                                int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.substring(0, 1), null, null);
+                                pictogram.setImageResource(id);
+
+
+                            }
+                        }, new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.i("PETITION_DB", error.toString());
+                            }
+                        }) {
+                            @Override
+                            protected Map<String, String> getParams() throws AuthFailureError {
+                                HashMap<String, String> params = new HashMap<String, String>();
+                                params.put("user", SettingsActivity.getUsername());
+                                params.put("language", SettingsActivity.getLanguage());
+                                params.put("difficulty", "" + difficulty);
+                                Log.i("PETITION_DB", "getParams: " + difficulty);
+                                return params;
+                            }
+                        };
+                        queueDatabase.add(databaseRequest);
+                    }else{
+                        word = words[0];
+                        words = removeIndex(words, 0);
+                        btnAction.setText("Check");
+                        position++;
+                        etPalabraRestante.setText(word);
+                        int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.substring(0, 1), null, null);
+                        pictogram.setLayoutParams(new TableRow.LayoutParams(200, 200));
+                        pictogram.setImageResource(id);
+
+                    }
                     /*
-                    String[] palabras = {"boa", "raca", "chundasvinto", "rufus", "hola", "vida", "soja", "cabra"};
-                    int rnd = new Random().nextInt(palabras.length);
-                    palabra = palabras[rnd];
+                    String[] words = {"boa", "raca", "chundasvinto", "rufus", "hola", "vida", "soja", "cabra"};
+                    int rnd = new Random().nextInt(words.length);
+                    palabra = words[rnd];
                     */
 
-                }else if(position < palabra.length()){ //queda palabra
+                }else if(position < word.length()){ //queda palabra
+
+
                     btnAction.setEnabled(false);
-                    final char letra = palabra.charAt(position);
+                    final char letra = word.charAt(position);
                     Log.i("Letra", ""+letra);
                     getPicture(letra); //extraer foto
 
@@ -235,9 +259,9 @@ public class Camera2Activity extends AppCompatActivity {
                                 Log.i("Letra", "Grande niño");
                                 position++;
                                 etPalabraCorreta.setText(etPalabraCorreta.getText()+""+letra);
-                                etPalabraRestante.setText(palabra.substring(position));
+                                etPalabraRestante.setText(word.substring(position));
 
-                                if(position == palabra.length()){ //Acierta toda la palabra
+                                if(position == word.length()){ //Acierta toda la palabra
                                     toast = Toast.makeText(ctx, "Muy bien", Toast.LENGTH_LONG);
                                     etPalabraCorreta.setText("Muy bien");
                                     position = -1;
@@ -390,6 +414,24 @@ public class Camera2Activity extends AppCompatActivity {
 
         } catch (Exception e) {
         }
+    }
+
+
+    private String[] removeIndex(String[] array, int index) {
+
+        String[] result = new String[array.length - 1];
+        if(array.length == 1)
+            return null;
+
+        int count = 0;
+        for (int i = 0; i < array.length; i++) {
+            if(i != index){
+                result[count] = array[i];
+                count++;
+            }
+        }
+
+        return result;
     }
 
     public void openCamera() {
