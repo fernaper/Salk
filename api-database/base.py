@@ -95,10 +95,10 @@ def get_score():
 def record_success():
     user_name = request.form['user']
     words = request.form['word']
-    difficulty = request.form['difficulty']
+    difficulty = int(request.form['difficulty'])
     for word in words.split():
-        insert_successful_user(user_name, word)
-        upload_score(user_name, difficulty)
+        model.insert_successful_user(user_name, word)
+        model.upload_score(user_name, difficulty)
 
     return jsonify({"ok":True})
 
