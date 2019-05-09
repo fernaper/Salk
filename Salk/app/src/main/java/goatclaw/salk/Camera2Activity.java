@@ -179,9 +179,6 @@ public class Camera2Activity extends AppCompatActivity {
                                 word = responseDB.get("word");
                                 position++;
                                 etPalabraRestante.setText(word);
-                                int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.substring(0, 1), null, null);
-                                pictogram.setImageResource(id);
-
 
                             }
                         }, new Response.ErrorListener() {
@@ -325,12 +322,14 @@ public class Camera2Activity extends AppCompatActivity {
                                 }else{
                                     toast = Toast.makeText(ctx, "Correcto", Toast.LENGTH_LONG);
                                     int pos = position;
-                                    int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.charAt(pos), null, null);
-                                    while(word.charAt(pos) == ' '){
-                                        pos++;
-                                        id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.charAt(pos), null, null);
+                                    if( SettingsActivity.getLevel() != 2){
+                                        int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.charAt(pos), null, null);
+                                        while(word.charAt(pos) == ' '){
+                                            pos++;
+                                            id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.charAt(pos), null, null);
+                                        }
+                                        pictogram.setImageResource(id);
                                     }
-                                    pictogram.setImageResource(id);
                                 }
                             }else{
                                 toast = Toast.makeText(ctx, "Incorrecto, vuelva a intentarlo", Toast.LENGTH_LONG);
