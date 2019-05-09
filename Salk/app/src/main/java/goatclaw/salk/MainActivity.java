@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_main);
-//* comentar para enroque
+        //* comentar para enroque
         //Inicializamos la conexión con Google
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(idToken)
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity
         googleSignInClient = GoogleSignIn.getClient(this, gso);
 
         //Cogemos la info de google
-        account = getIntent().getParcelableExtra(LoginActivity.GOOGLE_ACCOUNT);
+        account = getIntent().getParcelableExtra(LoginActivity.GOOGLE_ACCOUNT);//*/
 
         String lang = Locale.getDefault().getLanguage();
         String language;
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity
 
         String username = account.getGivenName().toLowerCase(); //comentar para enroque
 
-        //String username = userEnroque; descomentar para enroque
+        //String username = userEnroque; //descomentar para enroque
 
         //Mando el user a la api de Barral , si hay algun problema hago logout
         sendUserName(username, language);
@@ -164,7 +164,15 @@ public class MainActivity extends AppCompatActivity
                             getLevel(username);
                             getUserStats(username);
                             SettingsActivity.setEmail(account.getEmail());
-                            SettingsActivity.setUserImage(account.getPhotoUrl().toString());
+                            SettingsActivity.setUserImage(account.getPhotoUrl().toString());//*/
+
+                            /*/ Descomentar para enroqe
+                            SettingsActivity.setUsername(userEnroque);
+                            getLevel(username);
+                            getUserStats(username);
+                            SettingsActivity.setEmail(emailEnroque);
+                            SettingsActivity.setUserImage(photoEnroque);//*/
+
                         }
                         else
                             errorLogin();
@@ -362,5 +370,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        getUserStats(SettingsActivity.getUsername());
     }
 }

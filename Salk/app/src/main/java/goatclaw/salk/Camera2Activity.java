@@ -147,7 +147,7 @@ public class Camera2Activity extends AppCompatActivity {
                 if(position == -1) { //primera iteración
                     etPalabraCorreta.setText("");
 
-                    int diff = new Random().nextInt(4);
+                    int diff = new Random().nextInt(6);
                     diff += SettingsActivity.getLevel()*6;
                     diff = diff == 0?1:diff;
 
