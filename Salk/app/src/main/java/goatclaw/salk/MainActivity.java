@@ -2,12 +2,8 @@ package goatclaw.salk;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.media.audiofx.Equalizer;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -20,7 +16,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,14 +27,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -103,8 +96,6 @@ public class MainActivity extends AppCompatActivity
         String username = account.getGivenName().toLowerCase();
         //Mando el user a la api de Barral , si hay algun problema hago logout
         sendUserName(username, language);
-        getLevel(username);
-        getUserStats(username);
 
         //Seteo los campos de la interfaz con los datos del usuario de google
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -169,6 +160,8 @@ public class MainActivity extends AppCompatActivity
                         if(respuesta.get("warning") == "") {
                             SettingsActivity.setLanguage(Locale.getDefault().getDisplayLanguage());
                             SettingsActivity.setUsername(account.getDisplayName());
+                            getLevel(username);
+                            getUserStats(username);
                         }
                         else
                             errorLogin();
@@ -180,7 +173,7 @@ public class MainActivity extends AppCompatActivity
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.i("PETITION_DB",  error.toString());
+                    Log.i("sendUserName",  error.toString());
                     errorLogin();
                 }
             }) {
@@ -216,7 +209,7 @@ public class MainActivity extends AppCompatActivity
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.i("PETITION_DB",  error.toString());
+                    Log.i("getUserStats",  error.toString());
                 }
             }) {
                 @Override
@@ -250,7 +243,7 @@ public class MainActivity extends AppCompatActivity
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.i("PETITION_DB",  error.toString());
+                    Log.i("getLevel",  error.toString());
                 }
             }) {
                 @Override
