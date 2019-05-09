@@ -64,6 +64,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class Camera2Activity extends AppCompatActivity {
     private Size previewsize;
@@ -194,7 +195,7 @@ public class Camera2Activity extends AppCompatActivity {
                                 HashMap<String, String> params = new HashMap<String, String>();
                                 params.put("user", SettingsActivity.getUsername());
                                 params.put("language", SettingsActivity.getLanguage());
-                                params.put("difficulty", "" + difficulty);
+                                params.put("difficulty", "" + SettingsActivity.getLevel());
                                 Log.i("PETITION_DB", "getParams: " + difficulty);
                                 return params;
                             }
@@ -291,7 +292,6 @@ public class Camera2Activity extends AppCompatActivity {
                     //esperar a que haya foto
                     while(imageBytes == null);
 
-
                     //enviar y esperar la respuesta de la API
                     final String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
                     RequestQueue queueNN = Volley.newRequestQueue(ctx);
@@ -319,6 +319,7 @@ public class Camera2Activity extends AppCompatActivity {
                                 if(position == word.length()){ //Acierta toda la palabra
                                     toast = Toast.makeText(ctx, "Muy bien", Toast.LENGTH_LONG);
                                     etPalabraCorreta.setText("Muy bien");
+                                    addWord(word);
                                     position = -1;
                                     btnAction.setText("Siguiente");
                                 }else{
@@ -377,6 +378,35 @@ public class Camera2Activity extends AppCompatActivity {
             }
         });
     }
+
+    void addWord(final String palabra){
+        RequestQueue queueDatabase = Volley.newRequestQueue(this);
+
+
+        StringRequest myReq = new StringRequest(Request.Method.PUT, URL_DATABASE+"record_success", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                ObjectMapper mapper = new ObjectMapper();
+                Log.i("PETITION_DB",  response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("PETITION_DB",  error.toString());
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                HashMap<String, String> params = new HashMap<String, String>();
+                params.put("user", SettingsActivity.getUsername());
+                params.put("difficulty", ""+SettingsActivity.getLevel());
+                params.put("word",palabra);
+                return params;
+            }
+        };
+        queueDatabase.add(myReq);
+    }
+
 
     void getPicture(final char letra) {
         if (cameraDevice == null) {
