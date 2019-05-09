@@ -78,7 +78,7 @@ def get_phrase_with_difficulty():
     if(difficulty == 1):
         phrase_length = random.randint(2,3)
     else:
-        phrase_length = random.randint(5,7)
+        phrase_length = random.randint(3,4)
 
     phrase = model.get_word_with_difficulty(user_name, language, difficulty, phrase_length)
     return jsonify({"word": phrase})
@@ -94,10 +94,12 @@ def get_score():
 @app.route('/record_success', methods=['PUT'])
 def record_success():
     user_name = request.form['user']
-    word = request.form['word']
+    words = request.form['word']
     difficulty = request.form['difficulty']
-    insert_successful_user(user_name, word)
-    upload_score(user_name, difficulty)
+    for word in words.split():
+        insert_successful_user(user_name, word)
+        upload_score(user_name, difficulty)
+
     return jsonify({"ok":True})
 
 if __name__ == "__main__":
