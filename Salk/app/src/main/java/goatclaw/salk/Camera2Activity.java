@@ -138,7 +138,7 @@ public class Camera2Activity extends AppCompatActivity {
         int diff = new Random().nextInt(4);
         diff += SettingsActivity.getLevel()*6;
 
-        diff = diff == 0?1:diff;
+
 
         btnAction.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,6 +148,7 @@ public class Camera2Activity extends AppCompatActivity {
 
                     int diff = new Random().nextInt(4);
                     diff += SettingsActivity.getLevel()*6;
+                    diff = diff == 0?1:diff;
 
                     final int difficulty = diff;
 
@@ -156,12 +157,8 @@ public class Camera2Activity extends AppCompatActivity {
                     //Se quiere coger una frase en vez de palabras
                     //TODO ver que pasa si se devuele una frase
 
-                    }
-
-                    if(words == null) {
-
                         RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
-                        StringRequest databaseRequest = new StringRequest(Request.Method.POST, URL_DATABASE + "get_word", new Response.Listener<String>() {
+                        StringRequest databaseRequest = new StringRequest(Request.Method.POST, URL_DATABASE + "get_phrase", new Response.Listener<String>() {
                             @SuppressLint("SetTextI18n")
                             @Override
                             public void onResponse(String response) {
@@ -177,13 +174,8 @@ public class Camera2Activity extends AppCompatActivity {
                                     e.printStackTrace();
                                 }
 
-
-                                words = responseDB.get("word").split(" ");
-                                for (int i = 0; i < words.length; i++)
-                                    Log.i("PETITION_DB", words[i]);
-                                word = words[0];
-                                words = removeIndex(words, 0);
-                                btnAction.setText("Check");
+                                words = null;
+                                word = responseDB.get("word");
                                 position++;
                                 etPalabraRestante.setText(word);
                                 int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.substring(0, 1), null, null);
@@ -208,16 +200,72 @@ public class Camera2Activity extends AppCompatActivity {
                             }
                         };
                         queueDatabase.add(databaseRequest);
-                    }else{
-                        word = words[0];
-                        words = removeIndex(words, 0);
-                        btnAction.setText("Check");
-                        position++;
-                        etPalabraRestante.setText(word);
-                        int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.substring(0, 1), null, null);
-                        pictogram.setLayoutParams(new TableRow.LayoutParams(200, 200));
-                        pictogram.setImageResource(id);
 
+
+                    }else {
+
+
+                        if (words == null) {
+
+                            RequestQueue queueDatabase = Volley.newRequestQueue(ctx);
+                            StringRequest databaseRequest = new StringRequest(Request.Method.POST, URL_DATABASE + "get_word", new Response.Listener<String>() {
+                                @SuppressLint("SetTextI18n")
+                                @Override
+                                public void onResponse(String response) {
+
+
+                                    Log.i("PETITION_DB", response);
+
+                                    ObjectMapper mapper = new ObjectMapper();
+                                    try {
+                                        responseDB = mapper.readValue(response, new TypeReference<Map<String, String>>() {
+                                        });
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+
+
+                                    words = responseDB.get("word").split(" ");
+                                    for (int i = 0; i < words.length; i++)
+                                        Log.i("PETITION_DB", words[i]);
+                                    word = words[0];
+                                    words = removeIndex(words, 0);
+                                    btnAction.setText("Check");
+                                    position++;
+                                    etPalabraRestante.setText(word);
+                                    int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.substring(0, 1), null, null);
+                                    pictogram.setImageResource(id);
+
+
+                                }
+                            }, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Log.i("PETITION_DB", error.toString());
+                                }
+                            }) {
+                                @Override
+                                protected Map<String, String> getParams() throws AuthFailureError {
+                                    HashMap<String, String> params = new HashMap<String, String>();
+                                    params.put("user", SettingsActivity.getUsername());
+                                    params.put("language", SettingsActivity.getLanguage());
+                                    params.put("difficulty", "" + difficulty);
+                                    Log.i("PETITION_DB", "getParams: " + difficulty);
+                                    return params;
+                                }
+                            };
+                            queueDatabase.add(databaseRequest);
+                        } else {
+                            word = words[0];
+                            words = removeIndex(words, 0);
+                            btnAction.setText("Check");
+                            position++;
+                            etPalabraRestante.setText(word);
+                            int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.substring(0, 1), null, null);
+                            pictogram.setLayoutParams(new TableRow.LayoutParams(200, 200));
+                            pictogram.setImageResource(id);
+
+                        }
                     }
                     /*
                     String[] words = {"boa", "raca", "chundasvinto", "rufus", "hola", "vida", "soja", "cabra"};
@@ -227,19 +275,26 @@ public class Camera2Activity extends AppCompatActivity {
 
                 }else if(position < word.length()){ //queda palabra
 
-
                     btnAction.setEnabled(false);
-                    final char letra = word.charAt(position);
-                    Log.i("Letra", ""+letra);
+                    char aux = word.charAt(position);
+
+                    while(aux == ' '){
+                        position++;
+                        aux = word.charAt(position);
+                        etPalabraCorreta.setText(etPalabraCorreta.getText()+" ");
+                        etPalabraRestante.setText(word.substring(position));
+                    }
+                    final char letra = aux;
+
                     getPicture(letra); //extraer foto
 
                     //esperar a que haya foto
                     while(imageBytes == null);
 
+
                     //enviar y esperar la respuesta de la API
                     final String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
                     RequestQueue queueNN = Volley.newRequestQueue(ctx);
-
                     // Request a string response from the provided URL_NEURONAL_NETWORK.
                     StringRequest neuronalNetworkRequest = new StringRequest(Request.Method.POST, URL_NEURONAL_NETWORK, new Response.Listener<String>() {
                         @SuppressLint("SetTextI18n")
@@ -268,6 +323,13 @@ public class Camera2Activity extends AppCompatActivity {
                                     btnAction.setText("Siguiente");
                                 }else{
                                     toast = Toast.makeText(ctx, "Correcto", Toast.LENGTH_LONG);
+                                    int pos = position;
+                                    int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.charAt(pos), null, null);
+                                    while(word.charAt(pos) == ' '){
+                                        pos++;
+                                        id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.charAt(pos), null, null);
+                                    }
+                                    pictogram.setImageResource(id);
                                 }
                             }else{
                                 toast = Toast.makeText(ctx, "Incorrecto, vuelva a intentarlo", Toast.LENGTH_LONG);
