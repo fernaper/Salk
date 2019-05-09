@@ -354,9 +354,6 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_profile) {
             // Handle the camera action
-        } else if (id == R.id.nav_levels) {
-            Log.i("Settings", SettingsActivity.getLanguage() + " " + SettingsActivity.getLevel());
-
         } else if (id == R.id.nav_translate) {
 
             Intent transalateIntent = new Intent(getApplicationContext(), TranslateActivity.class);

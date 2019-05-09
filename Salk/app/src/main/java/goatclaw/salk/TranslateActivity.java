@@ -160,8 +160,6 @@ public class TranslateActivity extends AppCompatActivity
             Intent main = new Intent(getApplicationContext(), MainActivity.class);
             main.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(main);
-        } else if (id == R.id.nav_levels) {
-
         } else if (id == R.id.nav_translate) {
 
 
