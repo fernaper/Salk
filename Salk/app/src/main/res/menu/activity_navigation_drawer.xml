@@ -6,11 +6,11 @@
             android:id="@+id/nav_profile"
             android:icon="@android:drawable/ic_menu_my_calendar"
             android:title="Mi Perfil" />
+        <!--
         <item
             android:id="@+id/nav_levels"
             android:icon="@android:drawable/ic_menu_agenda"
             android:title="Niveles" />
-        <!--
         <item
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_menu_slideshow"

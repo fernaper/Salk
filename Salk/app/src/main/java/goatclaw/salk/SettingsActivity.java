@@ -56,8 +56,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * to reflect its new value.
      */
 
-    private static String language;
+    //puede ser muy guarro
+    private static int contador;
+
     private static String username;
+    private static int level;
+    private static String language;
+
+    private static String email;
+    private static String userImage;
+
 
     public static String getEmail() {
         return email;
@@ -66,10 +74,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public static void setEmail(String email) {
         SettingsActivity.email = email;
     }
-
-    private static String email;
-    private static int level;
-    private static String userImage;
 
     public static String getLanguage() {
         return language;
@@ -115,16 +119,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 ListPreference listPreference = (ListPreference) preference;
                 int index = listPreference.findIndexOfValue(stringValue);
 
-                if(preference.toString().equals("Language")){
+                if(preference.getTitle().toString().equals("Language")){
                     language = stringValue;
-                }else if(preference.toString().equals("Level")){
+                    Log.i("Holas", "onPreferenceChange: " + language +", " +stringValue);
+                }else if(preference.getTitle().toString().equals("Level")){
                     level = index;
+                    Log.i("Holas", "onPreferenceChange: " + level +", " +index);
                 }else{
 
                 }
 
-                // Set the summary to reflect the new value.
                 preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+                // Set the summary to reflect the new value.
+
 
             } else if (preference instanceof RingtonePreference) {
                 // For ringtone preferences, look up the correct display value
@@ -213,6 +220,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        contador = 0;
         super.onCreate(savedInstanceState);
         setupActionBar();
     }
@@ -353,9 +361,46 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public void onBackPressed() {
         //TODO llamar al update de la api de Barral con dificultad y lenguaje
         // Dan errores raros
-        //setUserLanguage(getUsername(), getLanguage());
-        //setUserDifficulty(getUsername(), String.valueOf(getLevel()));
+        if(contador != 0){
+            //updateDatabase(getUsername(), getLanguage(), getLevel());
+            Log.i("YEEEEEEP", "onBackPressed: " + getUsername() +", "+ language +", " + level);
+            setUserLanguage(getUsername(), getLanguage());
+            //setUserParameters(getUsername(), getLevel(), getLanguage());
+
+        }else{
+            contador++;
+        }
+
         super.onBackPressed();
+    }
+
+    private void setUserParameters(final String username, final int level, final String language){
+        RequestQueue queueDatabase = Volley.newRequestQueue(this);
+
+        if (username != null && !username.equals("") && level < 3 && level >= 0 && language != null && !language.equals("")) {
+            StringRequest myReq = new StringRequest(Request.Method.PUT, "http://92.176.178.247:5754/set_difficulty", new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    Log.i("PETITION_DB",  response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.i("PETITION_DB",  error.toString());
+                }
+            }) {
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    HashMap<String, String> params = new HashMap<String, String>();
+                    params.put("user", username);
+                    params.put("language", language);
+                    params.put("difficulty",""+level);
+                    return params;
+                }
+            };
+            queueDatabase.add(myReq);
+        }
     }
 
     private void setUserLanguage(final String username, final String language){
@@ -367,6 +412,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 public void onResponse(String response) {
                     ObjectMapper mapper = new ObjectMapper();
                     Log.i("PETITION_DB",  response);
+                    
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    setUserDifficulty(getUsername(), getLevel());
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -386,10 +438,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    private void setUserDifficulty(final String username, final String difficulty){
+    private void setUserDifficulty(final String username, final int difficulty){
         RequestQueue queueDatabase = Volley.newRequestQueue(this);
 
-        if (difficulty != null && !difficulty.equals("") && username != null && !username.equals("")) {
+        if (username != null && !username.equals("")) {
             StringRequest myReq = new StringRequest(Request.Method.PUT, "http://92.176.178.247:5754/set_difficulty", new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
@@ -406,7 +458,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 protected Map<String, String> getParams() throws AuthFailureError {
                     HashMap<String, String> params = new HashMap<String, String>();
                     params.put("user", username);
-                    params.put("difficulty", difficulty);
+                    params.put("difficulty",""+difficulty);
                     return params;
                 }
             };
