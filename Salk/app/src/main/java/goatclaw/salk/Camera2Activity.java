@@ -131,8 +131,8 @@ public class Camera2Activity extends AppCompatActivity {
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(textureViewWidth, textureViewHeight);
 
         //Para el prototipo se cogen algunos valores a pincho. Cambian de un móvil a otro
-        layoutParams.setMargins((screenWidth-textureViewWidth)/2 - 30,  screenHeight - (36+textureViewHeight),
-                            (screenWidth-textureViewWidth)/2 - 30, 36);
+        layoutParams.setMargins((screenWidth-textureViewWidth)/2 - 40,  screenHeight - (36+textureViewHeight),
+                            (screenWidth-textureViewWidth)/2 - 40, 36);
 
         textureView.setLayoutParams(layoutParams);
 
@@ -178,6 +178,7 @@ public class Camera2Activity extends AppCompatActivity {
                                 words = null;
                                 word = responseDB.get("word");
                                 position++;
+                                btnAction.setText("Check");
                                 etPalabraRestante.setText(word);
 
                             }
@@ -211,9 +212,7 @@ public class Camera2Activity extends AppCompatActivity {
                                 @Override
                                 public void onResponse(String response) {
 
-
                                     Log.i("PETITION_DB", response);
-
                                     ObjectMapper mapper = new ObjectMapper();
                                     try {
                                         responseDB = mapper.readValue(response, new TypeReference<Map<String, String>>() {
@@ -221,7 +220,6 @@ public class Camera2Activity extends AppCompatActivity {
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-
 
                                     words = responseDB.get("word").split(" ");
                                     for (int i = 0; i < words.length; i++)
@@ -262,7 +260,6 @@ public class Camera2Activity extends AppCompatActivity {
                             int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.substring(0, 1), null, null);
                             pictogram.setLayoutParams(new TableRow.LayoutParams(200, 200));
                             pictogram.setImageResource(id);
-
                         }
                     }
                     /*
@@ -314,13 +311,13 @@ public class Camera2Activity extends AppCompatActivity {
                                 etPalabraRestante.setText(word.substring(position));
 
                                 if(position == word.length()){ //Acierta toda la palabra
-                                    toast = Toast.makeText(ctx, "Muy bien", Toast.LENGTH_LONG);
-                                    etPalabraCorreta.setText("Muy bien");
+                                    toast = Toast.makeText(ctx, "Very well", Toast.LENGTH_LONG);
+                                    etPalabraCorreta.setText("Very well");
                                     addWord(word);
                                     position = -1;
-                                    btnAction.setText("Siguiente");
+                                    btnAction.setText("Next");
                                 }else{
-                                    toast = Toast.makeText(ctx, "Correcto", Toast.LENGTH_LONG);
+                                    toast = Toast.makeText(ctx, "Success", Toast.LENGTH_LONG);
                                     int pos = position;
                                     if( SettingsActivity.getLevel() != 2){
                                         int id = getResources().getIdentifier("goatclaw.salk:drawable/" + word.charAt(pos), null, null);
@@ -332,7 +329,7 @@ public class Camera2Activity extends AppCompatActivity {
                                     }
                                 }
                             }else{
-                                toast = Toast.makeText(ctx, "Incorrecto, vuelva a intentarlo", Toast.LENGTH_LONG);
+                                toast = Toast.makeText(ctx, "Fail, try it again", Toast.LENGTH_LONG);
                                 Log.i("Letra", "Nice try");
                             }
                             btnAction.setEnabled(true);
@@ -361,12 +358,10 @@ public class Camera2Activity extends AppCompatActivity {
 
                 }else { //Just in case!
                     //Aquí no debería entrar
-                    etPalabraCorreta.setText("Muy bien");
+                    etPalabraCorreta.setText("Very well");
                     position = -1;
-                    btnAction.setText("Start");
+                    btnAction.setText("Next");
                 }
-                /*LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(150, 150);
-                pictogram.setLayoutParams(layoutParams);*/
             }
         });
 
@@ -443,9 +438,6 @@ public class Camera2Activity extends AppCompatActivity {
                         imageBytes = new byte[buffer.capacity()];
                         buffer.get(imageBytes);
 
-                        //ConnectAPI connection = new ConnectAPI();
-                        //connection.sendImage(bytes, ctx, letra);
-                        //save(bytes);
                     } catch (Exception ee) {
                         ee.printStackTrace();
                     }
