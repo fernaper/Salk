@@ -56,15 +56,10 @@ public class MainActivity extends AppCompatActivity
     private final String idToken = "823885627668-qqlff48dh21ta4jcmevkq73hgs8pl9a2.apps.googleusercontent.com";
     private GoogleSignInClient googleSignInClient;
 
-    private String userEnroque = "enroque";
-    private String emailEnroque = "enroque@salk.com";
-    private String photoEnroque = "goatclaw.salk:drawable/cabra";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation_main);
-        //* comentar para enroque
         //Inicializamos la conexión con Google
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(idToken)
@@ -155,6 +150,7 @@ public class MainActivity extends AppCompatActivity
                         if(respuesta.get("warning") == "") {
                             SettingsActivity.setLanguage(Locale.getDefault().getDisplayLanguage());
                             SettingsActivity.setUsername(account.getDisplayName());
+                            SettingsActivity.setUserImage(account.getPhotoUrl().toString());
                             getLevel(username);
                         }
                         else
