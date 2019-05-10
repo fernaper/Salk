@@ -6,9 +6,18 @@ MAPPING
       "_doc" : {
         "properties" : {
           "difficulty" : {
-            "type" : "long"
+            "type" : "text"
           },
           "lang" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "successful_users" : {
             "type" : "text",
             "fields" : {
               "keyword" : {
@@ -29,23 +38,74 @@ MAPPING
         }
       }
     }
+  },
+  "users" : {
+    "mappings" : {
+      "_doc" : {
+        "properties" : {
+          "difficulty" : {
+            "type" : "long"
+          },
+          "easy_level_words" : {
+            "type" : "long"
+          },
+          "hard_level_words" : {
+            "type" : "long"
+          },
+          "language" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          },
+          "medium_level_words" : {
+            "type" : "long"
+          },
+          "name" : {
+            "type" : "text",
+            "fields" : {
+              "keyword" : {
+                "type" : "keyword",
+                "ignore_above" : 256
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
-
 
 SETTINGS
 {
   "words" : {
     "settings" : {
       "index" : {
-        "creation_date" : "1547488308112",
+        "creation_date" : "1552755154130",
         "number_of_shards" : "5",
         "number_of_replicas" : "1",
-        "uuid" : "tn3QTvOjTsOyN8vSkW2v-w",
+        "uuid" : "dn8CqbfAT1agwFKTivO90Q",
         "version" : {
-          "created" : "6050399"
+          "created" : "6060299"
         },
-        "provided_name" : "my_index"
+        "provided_name" : "words"
+      }
+    }
+  },
+  "users" : {
+    "settings" : {
+      "index" : {
+        "creation_date" : "1554409805547",
+        "number_of_shards" : "5",
+        "number_of_replicas" : "1",
+        "uuid" : "pX7b0LTHQC6UgJrsKUYSng",
+        "version" : {
+          "created" : "6060299"
+        },
+        "provided_name" : "users"
       }
     }
   }

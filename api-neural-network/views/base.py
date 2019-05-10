@@ -52,6 +52,31 @@ historic = []
 def hello():
     return jsonify({'ip':'88.0.109.140','msg':'Welcome to Salk API','status':True, 'neural-network':connected})
 
+@app.route('/check_frame_test', methods=['POST'])
+def check_image_test():
+    global process_manager, historic
+    if not connected:
+        process_manager = connect_neural_network()
+        if not connected:
+            return jsonify({'error':'It has not been possible to establish a connection to the neural network'})
+    numpy_image = np.fromfile(request.files['frame'], np.uint8)
+    letter = request.form['letter']
+
+    img = cv2.imdecode(numpy_image, cv2.IMREAD_COLOR)
+    prediction, confidence = send_neural_network(process_manager.img_queue(), process_manager.detection_queue(), img, letter)
+
+    historic.append({
+        'expected':letter,
+        'prediction':prediction,
+        'confidence':confidence,
+        'timestamp':arrow.now().format('YYYY-MM-DD HH:mm:ss')
+    })
+
+    msg = ' - Expected: {}; Prediction: {}; Confidence: {}'.format(letter, prediction, confidence)
+    print(msg)
+
+    return jsonify({'prediction':prediction, 'confidence':confidence})
+
 @app.route('/check_frame', methods=['POST'])
 def check_image():
     global process_manager, historic
@@ -69,14 +94,17 @@ def check_image():
             image_file.write(base64.b64decode(b64_img))
         img = cv2.imread('logs/last_image.png',0)
         prediction, confidence = send_neural_network(process_manager.img_queue(), process_manager.detection_queue(), img, letter)
+
         historic.append({
             'expected':letter,
             'prediction':prediction,
             'confidence':confidence,
             'timestamp':arrow.now().format('YYYY-MM-DD HH:mm:ss')
         })
+
         msg = ' - Expected: {}; Prediction: {}; Confidence: {}'.format(letter, prediction, confidence)
         print(msg)
+
         return jsonify({'prediction':prediction, 'confidence':confidence})
 
 @app.route('/historic', methods=['GET'])
