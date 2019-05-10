@@ -140,25 +140,25 @@ com_crashlytics_export_strings.xml
 local.properties
 
 # Gradle generated files
-.gradle/
+Salk/.gradle/
 
 # Signing files
-.signing/
+Salk/.signing/
 
 # User-specific configurations
-.idea/libraries/
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/.name
-.idea/compiler.xml
-.idea/copyright/profiles_settings.xml
-.idea/encodings.xml
-.idea/misc.xml
-.idea/modules.xml
-.idea/scopes/scope_settings.xml
-.idea/vcs.xml
-.idea/build_file_checksums.ser
-*.iml
+Salk/.idea/libraries/
+Salk/.idea/workspace.xml
+Salk/.idea/tasks.xml
+Salk/.idea/.name
+Salk/.idea/compiler.xml
+Salk/.idea/copyright/profiles_settings.xml
+Salk/.idea/encodings.xml
+Salk/.idea/misc.xml
+Salk/.idea/modules.xml
+Salk/.idea/scopes/scope_settings.xml
+Salk/.idea/vcs.xml
+Salk/.idea/build_file_checksums.ser
+Salk/*.iml
 
 # OS-specific files
 .DS_Store

@@ -64,7 +64,7 @@
 
             <EditText
                 android:id="@+id/etWordNotChecked"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:clickable="false"
@@ -76,7 +76,7 @@
 
             <EditText
                 android:id="@+id/etWordChecked"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:clickable="false"
@@ -93,9 +93,10 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/imageView3"
-            android:layout_width="wrap_content"
+            android:id="@+id/pictogram"
+            android:layout_width="186dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="left"
             android:layout_weight="1"
             android:src="@drawable/cabra" />
     </LinearLayout>
