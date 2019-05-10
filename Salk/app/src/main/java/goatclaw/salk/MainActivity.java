@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity
 
     //atributos estáticos para la configuración de cada usuario
     public static GoogleSignInAccount account;
-    private final String idToken = "165092933075-l627e9d3elufvocrrd84v559dv1ctmlr.apps.googleusercontent.com";
+    private final String idToken = "823885627668-qqlff48dh21ta4jcmevkq73hgs8pl9a2.apps.googleusercontent.com";
     private GoogleSignInClient googleSignInClient;
 
     private String userEnroque = "enroque";
@@ -96,9 +96,7 @@ public class MainActivity extends AppCompatActivity
                 language = "spanish";
         }
 
-        String username = account.getGivenName().toLowerCase(); //comentar para enroque
-
-        //String username = userEnroque; //descomentar para enroque
+        String username = account.getGivenName().toLowerCase();
 
         //Mando el user a la api de Barral , si hay algun problema hago logout
         sendUserName(username, language);
@@ -110,19 +108,16 @@ public class MainActivity extends AppCompatActivity
         TextView email = (TextView) headerView.findViewById(R.id.tvEmail);
         CircleImageView ph = (CircleImageView) headerView.findViewById(R.id.circle_image);
 
-        /* Solo para Enroque COMENTAR
-        SettingsActivity.setUserImage(photoEnroque);
-        int id = getResources().getIdentifier(SettingsActivity.getUserImage(), null, null);
-        ph.setImageResource(id); //*/
 
-        name.setText(SettingsActivity.getUsername());
-        email.setText(SettingsActivity.getEmail());
+        name.setText(account.getDisplayName().toLowerCase());
+        email.setText(account.getEmail());
+        SettingsActivity.setEmail(account.getEmail());
+        SettingsActivity.setUserImage(account.getPhotoUrl().toString());
+        SettingsActivity.setUsername(username);
 
-        //* comentar para enroque
         Glide.with(this).load(SettingsActivity.getUserImage())
                 .override(180,180)
                 .into(ph);
- //*/
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -159,20 +154,8 @@ public class MainActivity extends AppCompatActivity
                         HashMap<String, String> respuesta = mapper.readValue(response, new TypeReference<Map<String, String>>(){});
                         if(respuesta.get("warning") == "") {
                             SettingsActivity.setLanguage(Locale.getDefault().getDisplayLanguage());
-                            //* comentar para enroque
                             SettingsActivity.setUsername(account.getDisplayName());
                             getLevel(username);
-                            getUserStats(username);
-                            SettingsActivity.setEmail(account.getEmail());
-                            SettingsActivity.setUserImage(account.getPhotoUrl().toString());//*/
-
-                            /*/ Descomentar para enroqe
-                            SettingsActivity.setUsername(userEnroque);
-                            getLevel(username);
-                            getUserStats(username);
-                            SettingsActivity.setEmail(emailEnroque);
-                            SettingsActivity.setUserImage(photoEnroque);//*/
-
                         }
                         else
                             errorLogin();
@@ -278,19 +261,19 @@ public class MainActivity extends AppCompatActivity
         //Mostramos el cuadrante del usuario
         PieChartView pieChartView = (PieChartView) findViewById(R.id.chart);
         List<SliceValue> pieData = new ArrayList<>();
-        pieData.add(new SliceValue(easy_percentage, Color.BLUE).setLabel("Facil"));
-        pieData.add(new SliceValue(medium_percentage, Color.GRAY).setLabel("Medio"));
-        pieData.add(new SliceValue(hard_percentage, Color.MAGENTA).setLabel("Dificil"));
+        pieData.add(new SliceValue(easy_percentage, Color.BLUE).setLabel("Easy"));
+        pieData.add(new SliceValue(medium_percentage, Color.GRAY).setLabel("Medium"));
+        pieData.add(new SliceValue(hard_percentage, Color.MAGENTA).setLabel("Hard"));
         PieChartData pieChartData = new PieChartData(pieData);
         pieChartData.setHasLabels(true);
-        pieChartData.setHasCenterCircle(true).setCenterText1("Resumen del usuario").setCenterText1FontSize(15)
+        pieChartData.setHasCenterCircle(true).setCenterText1("Stats").setCenterText1FontSize(15)
                 .setCenterText1Color(Color.parseColor("#0097A7"));
         pieChartView.setPieChartData(pieChartData);
     }
 
     private void errorLogin(){
         logOut();
-        Toast toast1 = Toast.makeText(this, "Ha habido un problema al iniciar sesión con la aplicación", Toast.LENGTH_LONG);
+        Toast toast1 = Toast.makeText(this, "There has been a problem while loging", Toast.LENGTH_LONG);
         toast1.setGravity(Gravity.CENTER, 0, 0);
         toast1.show();
     }
@@ -369,7 +352,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onStart() {
-        super.onStart();
         getUserStats(SettingsActivity.getUsername());
+        super.onStart();
     }
 }

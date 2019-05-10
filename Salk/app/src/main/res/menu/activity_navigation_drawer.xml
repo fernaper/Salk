@@ -5,7 +5,7 @@
         <item
             android:id="@+id/nav_profile"
             android:icon="@android:drawable/ic_menu_my_calendar"
-            android:title="Mi Perfil" />
+            android:title="My Profile" />
         <!--
         <item
             android:id="@+id/nav_levels"
@@ -19,7 +19,7 @@
         <item
             android:id="@+id/nav_translate"
             android:icon="@android:drawable/ic_menu_sort_alphabetically"
-            android:title="Traductor" />
+            android:title="Translate" />
 
         <item
             android:id="@+id/nav_sign_out"

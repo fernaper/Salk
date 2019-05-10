@@ -46,7 +46,7 @@
                 android:layout_marginBottom="8dp"
                 android:layout_weight="1"
                 android:backgroundTint="@color/colorAccent"
-                android:text="Continuar Nivel"
+                android:text="Continue Activities"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent" />
