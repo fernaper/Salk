@@ -19,6 +19,7 @@ package goatclaw.salk;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
@@ -39,8 +40,12 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static goatclaw.salk.LoginActivity.googleSignInClient;
 
 public class TranslateActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -70,9 +75,6 @@ public class TranslateActivity extends AppCompatActivity
 
         name.setText(SettingsActivity.getUsername());
         email.setText(SettingsActivity.getEmail());
-
-        /*int id = getResources().getIdentifier(SettingsActivity.getUserImage(), null, null);
-        ph.setImageResource(id);*/
 
         Glide.with(this).load(SettingsActivity.getUserImage())
                 .override(180,180)
@@ -116,6 +118,19 @@ public class TranslateActivity extends AppCompatActivity
             }
         });
 
+    }
+
+    private void logOut(){
+        googleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                //On Succesfull signout we navigate the user back to LoginActivity
+                Intent intent=new Intent(TranslateActivity.this,LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     @Override
@@ -165,6 +180,8 @@ public class TranslateActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_share){
 
+        } else if (id == R.id.nav_sign_out){
+            logOut();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

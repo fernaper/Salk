@@ -84,7 +84,7 @@ public class Camera2Activity extends AppCompatActivity {
     private byte[] imageBytes;
 
 
-    private final String URL_NEURONAL_NETWORK = "http://88.0.109.140:5500/check_frame";
+    private final String URL_NEURONAL_NETWORK = "http://83.39.206.109:5500/check_frame";
     private final String URL_DATABASE = "http://92.176.178.247:5754/";
 
     private static HashMap<String, String> responseNN;
@@ -149,7 +149,7 @@ public class Camera2Activity extends AppCompatActivity {
 
                     int diff = new Random().nextInt(6);
                     diff += SettingsActivity.getLevel()*6;
-                    diff = diff == 0?1:diff;
+                    diff += 1;
 
                     final int difficulty = diff;
 
