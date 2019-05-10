@@ -80,7 +80,7 @@ def get_phrase_with_difficulty():
     else:
         phrase_length = random.randint(3,4)
 
-    phrase = model.get_word_with_difficulty(user_name, language, difficulty, phrase_length)
+    phrase = model.get_word_with_difficulty(user_name, language, random.randint(4,6), phrase_length)
     return jsonify({"word": phrase})
 
 
